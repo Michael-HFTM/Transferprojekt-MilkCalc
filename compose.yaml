@@ -1,0 +1,14 @@
+services:
+  database:
+    image: 'docker.io/library/postgres:17'
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=transferprojekt
+      - POSTGRES_PASSWORD=transferprojekt
+      - POSTGRES_DB=transferprojekt
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata: { }
