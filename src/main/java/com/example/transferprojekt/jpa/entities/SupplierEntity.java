@@ -5,27 +5,27 @@ import org.hibernate.annotations.UuidGenerator;
 import java.util.UUID;
 
 @Entity
-@Table(name = "Lieferant")
+@Table(name = "lieferant")
 public class SupplierEntity {
 
     @Id
     @GeneratedValue
     @UuidGenerator
-    @Column(name = "LieferantID", updatable = false, nullable = false)
+    @Column(name = "lieferant_id", updatable = false, nullable = false)
     private UUID supplierId;
 
-    @Column(name = "Name", length = 50)
+    @Column(name = "name", length = 50)
     private String name;
 
-    @Column(name = "Adresse", length = 50)
+    @Column(name = "adresse", length = 50)
     private String address;
 
-    @Column(name = "PLZ", length = 4)
+    @Column(name = "plz", columnDefinition = "bpchar(4)")
     private String zip;
 
-    @Column(name = "Ort", length = 50)
+    @Column(name = "ort", length = 50)
     private String city;
 
-    @Column(name = "Mail", length = 50)
+    @Column(name = "mail", length = 50)
     private String email;
 }

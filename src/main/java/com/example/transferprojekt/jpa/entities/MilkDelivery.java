@@ -8,27 +8,27 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-@Table(name = "Milchlieferung")
+@Table(name = "milchlieferung")
 public class MilkDelivery {
 
     @Id
     @GeneratedValue
     @UuidGenerator
-    @Column(name = "LieferungID", updatable = false, nullable = false)
+    @Column(name = "lieferung_id", updatable = false, nullable = false)
     private UUID deliveryId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "LieferantNr", nullable = false)
+    @JoinColumn(name = "lieferant_nr", nullable = false)
     private SupplierNrEntity lieferantNr;
 
-    @Column(name = "Datum", nullable = false)
+    @Column(name = "datum", nullable = false)
     private LocalDate date;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "Zeitfenster", nullable = false)
+    @Column(name = "zeitfenster", nullable = false)
     private TimeWindow zeitfenster;
 
-    @Column(name = "MengeKg")
+    @Column(name = "menge_kg")
     private BigDecimal amountKg;
 
 }
