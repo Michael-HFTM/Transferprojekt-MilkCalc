@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "milchlieferung")
-public class MilkDelivery {
+public class MilkDeliveryEntity {
 
     @Id
     @GeneratedValue
