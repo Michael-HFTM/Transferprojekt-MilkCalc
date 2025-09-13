@@ -13,6 +13,11 @@ public class Assignment {
         this.validTo = validTo;
     }
 
+    public Assignment(SupplierNumber supplierNumber, LocalDate validFrom) {
+        this.supplierNumber = supplierNumber;
+        this.validFrom = validFrom;
+    }
+
     public LocalDate getValidTo() {
         return validTo;
     }
@@ -35,5 +40,14 @@ public class Assignment {
 
     public void setSupplierNumber(SupplierNumber supplierNumber) {
         this.supplierNumber = supplierNumber;
+    }
+
+    @Override
+    public String toString() {
+        return "Assignment{" +
+                "supplierNumber=" + supplierNumber.toString() +
+                ", validFrom=" + validFrom +
+                ", validTo=" + validTo +
+                '}';
     }
 }

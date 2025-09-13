@@ -50,4 +50,14 @@ public class MilkDelivery {
     public void setTimeWindow(TimeWindow timeWindow) {
         this.timeWindow = timeWindow;
     }
+
+    @Override
+    public String toString() {
+        return "MilkDelivery{" +
+                "amountKg=" + amountKg +
+                ", date=" + date +
+                ", supplierNumber=" + supplierNumber.toString() +
+                ", timeWindow=" + timeWindow +
+                '}';
+    }
 }
