@@ -2,6 +2,7 @@ package com.example.transferprojekt;
 
 import com.example.transferprojekt.dataclasses.*;
 import com.example.transferprojekt.enumerations.TimeWindow;
+import com.example.transferprojekt.services.Terminal;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -14,14 +15,18 @@ public class TransferprojektApplication {
     public static void main(String[] args) {
 
         /* start Springboot */
-        if(false) {
+        if(true) {
             SpringApplication.run(TransferprojektApplication.class, args);
         }
 
         /* test outputs for dataclasses */
-        if(true){ testDataclasses(); }
+        if(false){ testDataclasses(); }
+
+        Terminal terminal = new Terminal();
+        terminal.startTerminal();
 
     }
+
 
     public static void testDataclasses(){
 
