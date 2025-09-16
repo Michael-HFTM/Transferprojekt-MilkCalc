@@ -41,7 +41,7 @@ public class Terminal {
                         break;
 
                     case 2:
-                        printSuppliers();
+                        printCompanies();
                         break;
 
                     case 0:
@@ -110,7 +110,7 @@ public class Terminal {
         }
     }
 
-    private void printSuppliers(){
+    private void printCompanies(){
         List<Company> companies = supplierService.getCompanies();
         for (Company company : companies) {
             System.out.println(company.toString());
