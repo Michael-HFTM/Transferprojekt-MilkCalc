@@ -21,18 +21,18 @@ public class Assignment {
     }
 
     /* constructor for existing DB objects */
-    public Assignment(SupplierNumber supplierNumber, LocalDate validFrom, LocalDate validTo, UUID assignmentId) {
+    public Assignment(UUID assignmentId, SupplierNumber supplierNumber, LocalDate validFrom, LocalDate validTo) {
+        this.assignmentId = assignmentId;
         this.supplierNumber = supplierNumber;
         this.validFrom = validFrom;
         this.validTo = validTo;
-        this.assignmentId = assignmentId;
     }
 
     /* constructor for existing DB objects */
-    public Assignment(SupplierNumber supplierNumber, LocalDate validFrom, UUID assignmentId) {
+    public Assignment(UUID assignmentId, SupplierNumber supplierNumber, LocalDate validFrom) {
+        this.assignmentId = assignmentId;
         this.supplierNumber = supplierNumber;
         this.validFrom = validFrom;
-        this.assignmentId = assignmentId;
     }
 
     public LocalDate getValidTo() {

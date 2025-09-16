@@ -22,12 +22,12 @@ public class MilkDelivery {
     }
 
     /* constructor for existing DB objects */
-    public MilkDelivery(BigDecimal amountKg, LocalDate date, SupplierNumber supplierNumber, TimeWindow timeWindow, UUID deliveryId) {
+    public MilkDelivery(UUID deliveryId, BigDecimal amountKg, LocalDate date, SupplierNumber supplierNumber, TimeWindow timeWindow) {
+        this.deliveryId = deliveryId;
         this.amountKg = amountKg;
         this.date = date;
         this.supplierNumber = supplierNumber;
         this.timeWindow = timeWindow;
-        this.deliveryId = deliveryId;
     }
 
     public BigDecimal getAmountKg() {

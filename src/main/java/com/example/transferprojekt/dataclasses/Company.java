@@ -14,10 +14,10 @@ public class Company {
     }
 
     /* constructor for existing DB objects */
-    public Company(String mail, Address address, UUID companyId) {
+    public Company(UUID companyId, String mail, Address address) {
+        this.companyId = companyId;
         this.mail = mail;
         this.address = address;
-        this.companyId = companyId;
     }
 
     public String getMail() {
