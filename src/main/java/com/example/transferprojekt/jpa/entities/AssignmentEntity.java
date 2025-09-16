@@ -28,4 +28,44 @@ public class AssignmentEntity {
 
     @Column(name = "zugewiesen_bis")
     private LocalDate assignmentEndDate;
+
+    public UUID getAssignmentId() {
+        return assignmentId;
+    }
+
+    public void setAssignmentId(UUID assignmentId) {
+        this.assignmentId = assignmentId;
+    }
+
+    public SupplierNrEntity getSupplierNr() {
+        return supplierNr;
+    }
+
+    public void setSupplierNr(SupplierNrEntity supplierNr) {
+        this.supplierNr = supplierNr;
+    }
+
+    public SupplierEntity getSupplierId() {
+        return supplierId;
+    }
+
+    public void setSupplierId(SupplierEntity supplierId) {
+        this.supplierId = supplierId;
+    }
+
+    public LocalDate getAssignmentStartDate() {
+        return assignmentStartDate;
+    }
+
+    public void setAssignmentStartDate(LocalDate assignmentStartDate) {
+        this.assignmentStartDate = assignmentStartDate;
+    }
+
+    public LocalDate getAssignmentEndDate() {
+        return assignmentEndDate;
+    }
+
+    public void setAssignmentEndDate(LocalDate assignmentEndDate) {
+        this.assignmentEndDate = assignmentEndDate;
+    }
 }

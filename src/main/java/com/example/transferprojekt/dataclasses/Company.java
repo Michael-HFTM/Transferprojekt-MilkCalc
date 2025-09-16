@@ -1,13 +1,31 @@
 package com.example.transferprojekt.dataclasses;
 
+import java.util.UUID;
+
 public class Company {
 
+    private UUID companyId; // DB generated
     private String mail;
     private Address address;
 
     public Company(String mail, Address address) {
         this.mail = mail;
         this.address = address;
+    }
+
+    /* constructor for existing DB objects */
+    public Company(UUID companyId, String mail, Address address) {
+        this.companyId = companyId;
+        this.mail = mail;
+        this.address = address;
+    }
+
+    public UUID getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(UUID companyId) {
+        this.companyId = companyId;
     }
 
     public String getMail() {
@@ -29,7 +47,8 @@ public class Company {
     @Override
     public String toString() {
         return "Company{" +
-                "mail='" + mail + '\'' +
+                "UUID=" + companyId +
+                ", mail='" + mail + '\'' +
                 ", address=" + address.toString() +
                 '}';
     }

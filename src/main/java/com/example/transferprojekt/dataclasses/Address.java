@@ -2,13 +2,12 @@ package com.example.transferprojekt.dataclasses;
 
 public class Address {
 
-    private String city, firstName, lastName, street, zip;
+    private String name, street, city, zip;
 
-    public Address(String zip, String street, String lastName, String firstName, String city) {
+    public Address(String name, String street, String city, String zip) {
         this.zip = zip;
         this.street = street;
-        this.lastName = lastName;
-        this.firstName = firstName;
+        this.name = name;
         this.city = city;
     }
 
@@ -20,20 +19,12 @@ public class Address {
         this.city = city;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getName() {
+        return name;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setFirstName(String name) {
+        this.name = name;
     }
 
     public String getStreet() {
@@ -55,10 +46,9 @@ public class Address {
     @Override
     public String toString() {
         return "Address{" +
-                "city='" + city + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
+                "name='" + name + '\'' +
                 ", street='" + street + '\'' +
+                ", city='" + city + '\'' +
                 ", zip='" + zip + '\'' +
                 '}';
     }

@@ -1,9 +1,11 @@
 package com.example.transferprojekt.dataclasses;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public class Assignment {
 
+    private UUID assignmentId; // DB generated
     private SupplierNumber supplierNumber;
     private LocalDate validFrom, validTo;
 
@@ -14,6 +16,21 @@ public class Assignment {
     }
 
     public Assignment(SupplierNumber supplierNumber, LocalDate validFrom) {
+        this.supplierNumber = supplierNumber;
+        this.validFrom = validFrom;
+    }
+
+    /* constructor for existing DB objects */
+    public Assignment(UUID assignmentId, SupplierNumber supplierNumber, LocalDate validFrom, LocalDate validTo) {
+        this.assignmentId = assignmentId;
+        this.supplierNumber = supplierNumber;
+        this.validFrom = validFrom;
+        this.validTo = validTo;
+    }
+
+    /* constructor for existing DB objects */
+    public Assignment(UUID assignmentId, SupplierNumber supplierNumber, LocalDate validFrom) {
+        this.assignmentId = assignmentId;
         this.supplierNumber = supplierNumber;
         this.validFrom = validFrom;
     }
