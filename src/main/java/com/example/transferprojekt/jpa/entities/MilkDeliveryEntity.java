@@ -19,14 +19,14 @@ public class MilkDeliveryEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lieferant_nr", nullable = false)
-    private SupplierNrEntity lieferantNr;
+    private SupplierNrEntity supplierNr;
 
     @Column(name = "datum", nullable = false)
     private LocalDate date;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "zeitfenster", nullable = false)
-    private TimeWindow zeitfenster;
+    private TimeWindow timeWindow;
 
     @Column(name = "menge_kg")
     private BigDecimal amountKg;
@@ -39,12 +39,12 @@ public class MilkDeliveryEntity {
         this.deliveryId = deliveryId;
     }
 
-    public SupplierNrEntity getLieferantNr() {
-        return lieferantNr;
+    public SupplierNrEntity getSupplierNr() {
+        return supplierNr;
     }
 
-    public void setLieferantNr(SupplierNrEntity lieferantNr) {
-        this.lieferantNr = lieferantNr;
+    public void setSupplierNr(SupplierNrEntity lieferantNr) {
+        this.supplierNr = lieferantNr;
     }
 
     public LocalDate getDate() {
@@ -55,12 +55,12 @@ public class MilkDeliveryEntity {
         this.date = date;
     }
 
-    public TimeWindow getZeitfenster() {
-        return zeitfenster;
+    public TimeWindow getTimeWindow() {
+        return timeWindow;
     }
 
-    public void setZeitfenster(TimeWindow zeitfenster) {
-        this.zeitfenster = zeitfenster;
+    public void setTimeWindow(TimeWindow zeitfenster) {
+        this.timeWindow = zeitfenster;
     }
 
     public BigDecimal getAmountKg() {
