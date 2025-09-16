@@ -10,4 +10,12 @@ public class SupplierNrEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "lieferant_nr", updatable = false, nullable = false)
     private int supplierNr;
+
+    public int getSupplierNr() {
+        return supplierNr;
+    }
+
+    public void setSupplierNr(int supplierNr) {
+        this.supplierNr = supplierNr;
+    }
 }

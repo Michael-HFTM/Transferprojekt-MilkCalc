@@ -5,6 +5,7 @@ import com.example.transferprojekt.enumerations.TimeWindow;
 import com.example.transferprojekt.services.Terminal;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -14,19 +15,13 @@ public class TransferprojektApplication {
 
     public static void main(String[] args) {
 
-        /* start Springboot */
-        if(true) {
-            SpringApplication.run(TransferprojektApplication.class, args);
-        }
+        ApplicationContext context = SpringApplication.run(TransferprojektApplication.class, args);
+        Terminal terminal = context.getBean(Terminal.class);
+        terminal.startTerminal();
 
         /* test outputs for dataclasses */
         if(false){ testDataclasses(); }
-
-        Terminal terminal = new Terminal();
-        terminal.startTerminal();
-
     }
-
 
     public static void testDataclasses(){
 
@@ -34,7 +29,7 @@ public class TransferprojektApplication {
         System.out.println("Tests for Dataclasses:");
 
         SupplierNumber snr1 = new SupplierNumber(1);
-        Supplier sup = new Supplier("test@mail.com", new Address("9999", "Musterweg 1", "Gasser", "Michael", "Musterdorf"), snr1);
+        Supplier sup = new Supplier("test@mail.com", new Address("Gasser Michael","Musterweg 1","Musterdorf","9999"), snr1);
         MilkDelivery md = new MilkDelivery(new BigDecimal("10.35"),  LocalDate.now(), snr1 , TimeWindow.MORGEN );
         Assignment as = new Assignment(snr1,LocalDate.parse("2025-08-01"),LocalDate.parse("2026-12-31"));
 
