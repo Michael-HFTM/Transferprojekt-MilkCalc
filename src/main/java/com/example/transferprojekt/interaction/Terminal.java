@@ -3,6 +3,7 @@ package com.example.transferprojekt.interaction;
 import com.example.transferprojekt.dataclasses.Address;
 import com.example.transferprojekt.dataclasses.Company;
 import com.example.transferprojekt.jpa.entities.SupplierEntity;
+import com.example.transferprojekt.services.AdminToolsService;
 import com.example.transferprojekt.services.SupplierService;
 import org.springframework.stereotype.Component;
 
@@ -13,9 +14,11 @@ import java.util.UUID;
 @Component
 public class Terminal {
 
+    private final AdminToolsService adminToolsService;
     private final SupplierService supplierService;
 
-    public Terminal(SupplierService supplierService) {
+    public Terminal(AdminToolsService adminToolsService, SupplierService supplierService) {
+        this.adminToolsService = adminToolsService;
         this.supplierService = supplierService;
     }
 
@@ -50,6 +53,10 @@ public class Terminal {
                         printDeleteSupplier(input);
                         break;
 
+                    case 5:
+                        printFlushAllDataTables(input);
+                        break;
+
                     case 0:
                         System.out.println("Shutting down");
                         break;
@@ -78,7 +85,7 @@ public class Terminal {
         System.out.println("2. List suppliers");
         System.out.println("3. Delete a supplier (by UUID)");
         System.out.println("4. TODO: Insert test data");
-        System.out.println("5. TODO: Flush all data tables");
+        System.out.println("5. Flush all data tables");
         System.out.println("0. Exit");
         System.out.print("Selection: ");
 
@@ -161,5 +168,14 @@ public class Terminal {
             System.out.println("Aborting");
         }
     }
+
+    public void printFlushAllDataTables(Scanner input){
+
+        System.out.println("Confirm deltion of all table data.");
+        System.out.print("Type 'DELETE': ");
+        String key = input.nextLine();
+        adminToolsService.flushAllTables(key);
+    }
+
 
 }
