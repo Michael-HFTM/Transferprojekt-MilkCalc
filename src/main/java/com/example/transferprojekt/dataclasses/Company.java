@@ -20,6 +20,14 @@ public class Company {
         this.address = address;
     }
 
+    public UUID getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(UUID companyId) {
+        this.companyId = companyId;
+    }
+
     public String getMail() {
         return mail;
     }
@@ -39,7 +47,8 @@ public class Company {
     @Override
     public String toString() {
         return "Company{" +
-                "mail='" + mail + '\'' +
+                "UUID=" + companyId +
+                ", mail='" + mail + '\'' +
                 ", address=" + address.toString() +
                 '}';
     }

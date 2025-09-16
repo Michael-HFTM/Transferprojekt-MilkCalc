@@ -18,7 +18,7 @@ public class SupplierEntity {
     private String name;
 
     @Column(name = "adresse", length = 50)
-    private String address;
+    private String street;
 
     @Column(name = "plz", columnDefinition = "bpchar(4)")
     private String zip;
@@ -45,12 +45,12 @@ public class SupplierEntity {
         this.name = name;
     }
 
-    public String getAddress() {
-        return address;
+    public String getStreet() {
+        return street;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setStreet(String address) {
+        this.street = address;
     }
 
     public String getZip() {

@@ -10,6 +10,7 @@ import com.example.transferprojekt.jpa.repositories.SupplierRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class SupplierService {
@@ -20,16 +21,16 @@ public class SupplierService {
         this.supplierRepository = supplierRepository;
     }
 
-    public void saveCompany(Company company) {
+    public SupplierEntity saveCompany(Company company) {
         SupplierEntity entity = mapToEntity(company);
-        supplierRepository.save(entity);
+        return supplierRepository.save(entity);
     }
 
     /* Mapping: Dataclass<Company> -> Entity */
-    public SupplierEntity mapToEntity(Company company) {
+    private SupplierEntity mapToEntity(Company company) {
         SupplierEntity entity = new SupplierEntity();
         entity.setName(company.getAddress().getName());
-        entity.setAddress(company.getAddress().getStreet());
+        entity.setStreet(company.getAddress().getStreet());
         entity.setZip(company.getAddress().getZip());
         entity.setCity(company.getAddress().getCity());
         entity.setEmail(company.getMail());
@@ -39,26 +40,30 @@ public class SupplierService {
 
     /* Mapping: Entity -> Dataclass<Company> */
     public Company mapToCompanyDataclass(SupplierEntity entity) {
+        UUID supplierId = entity.getSupplierId();
         Address address = new Address(
-                entity.getZip(),
-                entity.getAddress(),
                 entity.getName(),
-                entity.getCity()
+                entity.getStreet(),
+                entity.getCity(),
+                entity.getZip()
         );
-        return new Company(entity.getEmail(), address);
+        return new Company(entity.getSupplierId() ,entity.getEmail(), address);
     }
 
-    /* Mapping: Entity -> Dataclass<Company> */
-    public Supplier mapToSupplierDataclass(SupplierEntity supEntity, SupplierNrEntity supNrEntity) {
+    /* Mapping: Entity -> Dataclass<Supplier> */
+    /* prepped for future use */
+    public Supplier mapToSupplierDataclass(SupplierEntity entity, SupplierNrEntity supNrEntity) {
+        UUID supplierId = entity.getSupplierId();
         Address address = new Address(
-                supEntity.getZip(),
-                supEntity.getAddress(),
-                supEntity.getName(),
-                supEntity.getCity()
+                entity.getName(),
+                entity.getStreet(),
+                entity.getCity(),
+                entity.getZip()
         );
         //TODO supplierNumber handeln sobald AssignmentService impelemtiert.
         SupplierNumber supplierNumber = null;
-        return new Supplier(supEntity.getEmail(), address, supplierNumber);
+
+        return new Supplier(entity.getSupplierId(), entity.getEmail(), address, supplierNumber);
     }
 
     public List<Company> getCompanies(){
@@ -67,5 +72,21 @@ public class SupplierService {
         return entities.stream()
                 .map(this::mapToCompanyDataclass)
                 .toList();
+    }
+
+    public SupplierEntity getSupplierById(UUID supplierId){
+        return supplierRepository.findById(supplierId).orElse(null);
+    }
+
+    public boolean deleteSupplierById(UUID supplierId){
+        SupplierEntity entity = getSupplierById(supplierId);
+        try {
+            supplierRepository.deleteById(supplierId);
+            return true;
+        } catch (Exception ex) {
+            System.out.println("Exception while deleting supplier:");
+            System.out.println(ex.getMessage());
+            return false;
+        }
     }
 }

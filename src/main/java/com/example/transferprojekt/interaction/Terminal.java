@@ -2,11 +2,13 @@ package com.example.transferprojekt.interaction;
 
 import com.example.transferprojekt.dataclasses.Address;
 import com.example.transferprojekt.dataclasses.Company;
+import com.example.transferprojekt.jpa.entities.SupplierEntity;
 import com.example.transferprojekt.services.SupplierService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Scanner;
+import java.util.UUID;
 
 @Component
 public class Terminal {
@@ -37,11 +39,15 @@ public class Terminal {
                 switch (selection) {
 
                     case 1:
-                        addSupplier(input);
+                        printAddSupplier(input);
                         break;
 
                     case 2:
                         printCompanies();
+                        break;
+
+                    case 3:
+                        printDeleteSupplier(input);
                         break;
 
                     case 0:
@@ -69,13 +75,16 @@ public class Terminal {
         System.out.println("=================");
         System.out.println("Select operation:");
         System.out.println("1. Add supplier");
-        System.out.println("2. Print suppliers");
+        System.out.println("2. List suppliers");
+        System.out.println("3. Delete a supplier (by UUID)");
+        System.out.println("4. TODO: Insert test data");
+        System.out.println("5. TODO: Flush all data tables");
         System.out.println("0. Exit");
         System.out.print("Selection: ");
 
     }
 
-    private void addSupplier(Scanner input) {
+    private void printAddSupplier(Scanner input) {
 
         boolean sucess = false;
 
@@ -99,8 +108,9 @@ public class Terminal {
             try {
                 Address address = new Address(name, street, city, zip);
                 Company company = new Company(email, address);
-                supplierService.saveCompany(company);
-                System.out.println("Supplier saved: " + company);
+                SupplierEntity entity = supplierService.saveCompany(company);
+                company = supplierService.mapToCompanyDataclass(entity);
+                System.out.println("Supplier saved: " + company.toString());
                 sucess = true;
 
             }  catch (Exception ex) {
@@ -114,6 +124,41 @@ public class Terminal {
         List<Company> companies = supplierService.getCompanies();
         for (Company company : companies) {
             System.out.println(company.toString());
+        }
+    }
+
+    private void printDeleteSupplier(Scanner input){
+
+        System.out.println("Delete supplier");
+        System.out.print("Enter UUID: ");
+        String inputUuid = input.nextLine();
+
+        SupplierEntity entity;
+        try {
+            UUID uuid = UUID.fromString(inputUuid);
+            entity = supplierService.getSupplierById(uuid);
+            if (entity == null){
+                System.out.println("Invalid UUID, aborting.");
+                return;
+            }
+
+        } catch (Exception ex) {
+            System.out.println("Encountered an issue:");
+            System.out.println(ex.getMessage());
+            System.out.println("Aborting.");
+            return;
+        }
+
+        Company company = supplierService.mapToCompanyDataclass(entity);
+        System.out.println(company.toString());
+        System.out.println("Are you sure you want to delete this supplier? (y/n)");
+        String choice = input.nextLine();
+
+        if (choice.equalsIgnoreCase("y")) {
+           if (supplierService.deleteSupplierById(entity.getSupplierId())) System.out.println("Supplier deleted.");
+
+        } else {
+            System.out.println("Aborting");
         }
     }
 
