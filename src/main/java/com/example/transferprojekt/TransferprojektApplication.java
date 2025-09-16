@@ -2,7 +2,7 @@ package com.example.transferprojekt;
 
 import com.example.transferprojekt.dataclasses.*;
 import com.example.transferprojekt.enumerations.TimeWindow;
-import com.example.transferprojekt.services.Terminal;
+import com.example.transferprojekt.interaction.Terminal;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;

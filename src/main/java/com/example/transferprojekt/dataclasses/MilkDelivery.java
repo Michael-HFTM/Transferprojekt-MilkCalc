@@ -4,9 +4,11 @@ import com.example.transferprojekt.enumerations.TimeWindow;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 public class MilkDelivery {
 
+    private UUID deliveryId; // DB generated
     private BigDecimal amountKg;
     private LocalDate date;
     private SupplierNumber supplierNumber;
@@ -17,6 +19,15 @@ public class MilkDelivery {
         this.date = date;
         this.supplierNumber = supplierNumber;
         this.timeWindow = timeWindow;
+    }
+
+    /* constructor for existing DB objects */
+    public MilkDelivery(BigDecimal amountKg, LocalDate date, SupplierNumber supplierNumber, TimeWindow timeWindow, UUID deliveryId) {
+        this.amountKg = amountKg;
+        this.date = date;
+        this.supplierNumber = supplierNumber;
+        this.timeWindow = timeWindow;
+        this.deliveryId = deliveryId;
     }
 
     public BigDecimal getAmountKg() {
