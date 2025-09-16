@@ -67,7 +67,6 @@ public class SupplierService {
     }
 
     public List<Company> getCompanies(){
-
         List<SupplierEntity> entities = supplierRepository.findAll();
         return entities.stream()
                 .map(this::mapToCompanyDataclass)
