@@ -31,4 +31,43 @@ public class MilkDeliveryEntity {
     @Column(name = "menge_kg")
     private BigDecimal amountKg;
 
+    public UUID getDeliveryId() {
+        return deliveryId;
+    }
+
+    public void setDeliveryId(UUID deliveryId) {
+        this.deliveryId = deliveryId;
+    }
+
+    public SupplierNrEntity getLieferantNr() {
+        return lieferantNr;
+    }
+
+    public void setLieferantNr(SupplierNrEntity lieferantNr) {
+        this.lieferantNr = lieferantNr;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public TimeWindow getZeitfenster() {
+        return zeitfenster;
+    }
+
+    public void setZeitfenster(TimeWindow zeitfenster) {
+        this.zeitfenster = zeitfenster;
+    }
+
+    public BigDecimal getAmountKg() {
+        return amountKg;
+    }
+
+    public void setAmountKg(BigDecimal amountKg) {
+        this.amountKg = amountKg;
+    }
 }
