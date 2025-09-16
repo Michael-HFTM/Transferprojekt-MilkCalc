@@ -1,13 +1,23 @@
 package com.example.transferprojekt.dataclasses;
 
+import java.util.UUID;
+
 public class Company {
 
+    private UUID companyId; // DB generated
     private String mail;
     private Address address;
 
     public Company(String mail, Address address) {
         this.mail = mail;
         this.address = address;
+    }
+
+    /* constructor for existing DB objects */
+    public Company(String mail, Address address, UUID companyId) {
+        this.mail = mail;
+        this.address = address;
+        this.companyId = companyId;
     }
 
     public String getMail() {

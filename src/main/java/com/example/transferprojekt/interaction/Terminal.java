@@ -1,7 +1,8 @@
-package com.example.transferprojekt.services;
+package com.example.transferprojekt.interaction;
 
 import com.example.transferprojekt.dataclasses.Address;
 import com.example.transferprojekt.dataclasses.Company;
+import com.example.transferprojekt.services.SupplierService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
