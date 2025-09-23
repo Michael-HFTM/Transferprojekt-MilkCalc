@@ -1,7 +1,5 @@
 package com.example.transferprojekt.dataclasses;
 
-import com.example.transferprojekt.jpa.entities.SupplierEntity;
-
 import java.time.LocalDate;
 import java.util.UUID;
 

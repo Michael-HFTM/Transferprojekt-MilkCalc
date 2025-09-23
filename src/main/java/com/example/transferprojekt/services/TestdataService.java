@@ -37,7 +37,7 @@ public class TestdataService {
         Company comp2 = new Company("huber@biofarm.ch", new Address("Biofarm Huber","Landweg 5","Musterberg","9998"));
         Company comp3 = new Company("kontakt@alpenmilch.ch", new Address("Alpenmilch AG","Bergstrasse 7","Musterdorf","9999"));
         ArrayList<Company> companies = new ArrayList<>(List.of(comp1, comp2, comp3));
-
+        System.out.println();
         System.out.println("Newly created Dataclasses:");
         printAllToString(companies);
         System.out.println("Saving to Database...");
@@ -51,7 +51,7 @@ public class TestdataService {
         Assignment as2 = new Assignment(companies.get(1).getCompanyId(),snr1,LocalDate.parse("2025-01-01"));
         Assignment as3 = new Assignment(companies.get(2).getCompanyId(),snr1,LocalDate.parse("2025-01-01"),LocalDate.parse("2026-12-31"));
         ArrayList<Assignment> assignments = new ArrayList<>(List.of(as1,as2,as3));
-
+        System.out.println();
         System.out.println("Newly created Dataclasses:");
         printAllToString(assignments);
         System.out.println("Saving to Database...");
@@ -66,7 +66,7 @@ public class TestdataService {
         MilkDelivery md3 = new MilkDelivery(new BigDecimal("105.75"),  LocalDate.parse("2025-09-01"), snr3 , TimeWindow.MORGEN );
         MilkDelivery md4 = new MilkDelivery(new BigDecimal("103.20"),  LocalDate.parse("2025-09-01"), snr3 , TimeWindow.ABEND );
         ArrayList<MilkDelivery> milkDeliveries = new ArrayList<>(List.of(md1, md2, md3, md4));
-
+        System.out.println();
         System.out.println("Newly created Dataclasses:");
         printAllToString(milkDeliveries);
         System.out.println("Saving to Database...");

@@ -1,7 +1,5 @@
 package com.example.transferprojekt.dataclasses;
 
-import java.math.BigDecimal;
-
 public class SupplierNumber {
 
     private int id;
