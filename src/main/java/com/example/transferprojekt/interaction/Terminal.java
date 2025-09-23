@@ -5,6 +5,7 @@ import com.example.transferprojekt.dataclasses.Company;
 import com.example.transferprojekt.jpa.entities.SupplierEntity;
 import com.example.transferprojekt.services.AdminToolsService;
 import com.example.transferprojekt.services.SupplierService;
+import com.example.transferprojekt.services.TestdataService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -16,10 +17,12 @@ public class Terminal {
 
     private final AdminToolsService adminToolsService;
     private final SupplierService supplierService;
+    private final TestdataService testdataService;
 
-    public Terminal(AdminToolsService adminToolsService, SupplierService supplierService) {
+    public Terminal(AdminToolsService adminToolsService, SupplierService supplierService, TestdataService testdataService) {
         this.adminToolsService = adminToolsService;
         this.supplierService = supplierService;
+        this.testdataService = testdataService;
     }
 
     public void startTerminal() {
@@ -53,6 +56,10 @@ public class Terminal {
                         printDeleteSupplier(input);
                         break;
 
+                    case 4:
+                        printInsertTestdata();
+                        break;
+
                     case 5:
                         printFlushAllDataTables(input);
                         break;
@@ -77,7 +84,7 @@ public class Terminal {
         input.close();
     }
 
-    public void printSelection(){
+    private void printSelection(){
 
         System.out.println("=================");
         System.out.println("Select operation:");
@@ -128,7 +135,7 @@ public class Terminal {
     }
 
     private void printCompanies(){
-        List<Company> companies = supplierService.getCompanies();
+        List<Company> companies = supplierService.getDatabaseEntries();
         for (Company company : companies) {
             System.out.println(company.toString());
         }
@@ -169,7 +176,11 @@ public class Terminal {
         }
     }
 
-    public void printFlushAllDataTables(Scanner input){
+    private void printInsertTestdata(){
+        testdataService.insertTestdata();
+    }
+
+    private void printFlushAllDataTables(Scanner input){
 
         System.out.println("Confirm deltion of all table data.");
         System.out.print("Type 'DELETE': ");
