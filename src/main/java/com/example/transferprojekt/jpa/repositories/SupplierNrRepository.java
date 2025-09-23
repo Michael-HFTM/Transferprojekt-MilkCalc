@@ -5,5 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SupplierNrRepository extends JpaRepository<SupplierNrEntity, Integer> {
 
+    boolean existsBySupplierNr(int supplierNr);
 }
 
