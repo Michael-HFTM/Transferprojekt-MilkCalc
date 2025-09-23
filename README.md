@@ -17,7 +17,7 @@ cd transferprojekt
 
 ```bash
 # PostgreSQL Datenbank mit Docker Compose starten
-docker-compose compose up -d
+docker compose up -d
 
 # Überprüfen, ob die Datenbank läuft
 docker ps
@@ -35,8 +35,22 @@ mvn spring-boot:run
 
 ### 4. Anwendung testen
 
-- **CLI:** Simple interaktionen über Terminalanwendung
-- **Datenbank:** PostgreSQL auf localhost:5432
-    - Database: `transferprojekt`
-    - Username: `transferprojekt`
-    - Password: `transferprojekt`
+**CLI:** Simple interaktionen über Terminalanwendung
+- Hinzufügen/Anzeigen/Löschen von Lieferanten
+- Automatisches einfügen vordefinerter Testdatensätze
+- Leeren der Datentabellen
+```
+=================
+Select operation:
+1. Add supplier
+2. List suppliers
+3. Delete a supplier (by UUID)
+4. Insert test data
+5. Flush all data tables
+0. Exit
+   Selection:
+```
+**Datenbank:** PostgreSQL auf localhost:5432
+- Database: `transferprojekt`
+- Username: `transferprojekt`
+- Password: `transferprojekt`
