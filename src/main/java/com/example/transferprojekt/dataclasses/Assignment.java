@@ -62,7 +62,8 @@ public class Assignment {
     @Override
     public String toString() {
         return "Assignment{" +
-                "supplierNumber=" + supplierNumber.toString() +
+                "UUID=" + assignmentId +
+                ", supplierNumber=" + supplierNumber.toString() +
                 ", validFrom=" + validFrom +
                 ", validTo=" + validTo +
                 '}';
