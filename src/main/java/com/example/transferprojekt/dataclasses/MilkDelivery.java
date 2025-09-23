@@ -30,6 +30,14 @@ public class MilkDelivery {
         this.timeWindow = timeWindow;
     }
 
+    public UUID getDeliveryId() {
+        return deliveryId;
+    }
+
+    public void setDeliveryId(UUID deliveryId) {
+        this.deliveryId = deliveryId;
+    }
+
     public BigDecimal getAmountKg() {
         return amountKg;
     }
@@ -65,7 +73,8 @@ public class MilkDelivery {
     @Override
     public String toString() {
         return "MilkDelivery{" +
-                "amountKg=" + amountKg +
+                "UUID=" + deliveryId +
+                ", amountKg=" + amountKg +
                 ", date=" + date +
                 ", supplierNumber=" + supplierNumber.toString() +
                 ", timeWindow=" + timeWindow +
