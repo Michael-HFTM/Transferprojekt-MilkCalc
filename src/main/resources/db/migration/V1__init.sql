@@ -2,8 +2,8 @@
 CREATE TABLE lieferant (
     lieferant_id	UUID NOT NULL DEFAULT gen_random_uuid(),
     name    		VARCHAR(50),
-    adresse        VARCHAR(50),
-    plz            	CHAR(4),
+    adresse         VARCHAR(50),
+    plz         	CHAR(4),
     ort            	VARCHAR(50),
     mail           	VARCHAR(50),
 
@@ -12,7 +12,7 @@ CREATE TABLE lieferant (
 
 -- Lieferantennummer
 CREATE TABLE lieferantennummer (
-   lieferant_nr		INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY,
+   lieferant_nr		INTEGER NOT NULL,
 
    CONSTRAINT pk_lieferantennummer_lieferant_nr PRIMARY KEY (lieferant_nr)
 );

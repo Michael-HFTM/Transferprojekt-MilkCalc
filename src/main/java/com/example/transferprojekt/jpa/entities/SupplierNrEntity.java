@@ -7,7 +7,6 @@ import jakarta.persistence.*;
 public class SupplierNrEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "lieferant_nr", updatable = false, nullable = false)
     private int supplierNr;
 
