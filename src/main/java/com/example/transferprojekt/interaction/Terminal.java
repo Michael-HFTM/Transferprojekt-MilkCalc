@@ -73,7 +73,7 @@ public class Terminal {
                 }
 
             } catch (Exception ex) {
-
+                System.out.println(ex.getMessage());
                 System.out.println("Invalid selection, try again.");
                 input.nextLine();
             }
@@ -91,7 +91,7 @@ public class Terminal {
         System.out.println("1. Add supplier");
         System.out.println("2. List suppliers");
         System.out.println("3. Delete a supplier (by UUID)");
-        System.out.println("4. TODO: Insert test data");
+        System.out.println("4. Insert test data");
         System.out.println("5. Flush all data tables");
         System.out.println("0. Exit");
         System.out.print("Selection: ");
@@ -122,8 +122,8 @@ public class Terminal {
             try {
                 Address address = new Address(name, street, city, zip);
                 Company company = new Company(email, address);
-                SupplierEntity entity = supplierService.saveCompany(company);
-                company = supplierService.mapToCompanyDataclass(entity);
+                SupplierEntity entity = supplierService.save(company);
+                company = supplierService.mapToDataclass(entity);
                 System.out.println("Supplier saved: " + company.toString());
                 sucess = true;
 
@@ -150,7 +150,7 @@ public class Terminal {
         SupplierEntity entity;
         try {
             UUID uuid = UUID.fromString(inputUuid);
-            entity = supplierService.getSupplierById(uuid);
+            entity = supplierService.getById(uuid);
             if (entity == null){
                 System.out.println("Invalid UUID, aborting.");
                 return;
@@ -163,13 +163,13 @@ public class Terminal {
             return;
         }
 
-        Company company = supplierService.mapToCompanyDataclass(entity);
+        Company company = supplierService.mapToDataclass(entity);
         System.out.println(company.toString());
         System.out.println("Are you sure you want to delete this supplier? (y/n)");
         String choice = input.nextLine();
 
         if (choice.equalsIgnoreCase("y")) {
-           if (supplierService.deleteSupplierById(entity.getSupplierId())) System.out.println("Supplier deleted.");
+           if (supplierService.deleteById(entity.getSupplierId())) System.out.println("Supplier deleted.");
 
         } else {
             System.out.println("Aborting");
@@ -177,6 +177,8 @@ public class Terminal {
     }
 
     private void printInsertTestdata(){
+
+        //TODO: Clear Tables after user confirmation
         testdataService.insertTestdata();
     }
 
