@@ -80,7 +80,6 @@ public class SupplierService {
     }
 
     public boolean deleteSupplierById(UUID supplierId){
-        SupplierEntity entity = getSupplierById(supplierId);
         try {
             supplierRepository.deleteById(supplierId);
             return true;
