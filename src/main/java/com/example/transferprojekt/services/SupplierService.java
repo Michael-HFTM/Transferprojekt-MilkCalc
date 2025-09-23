@@ -41,19 +41,21 @@ public class SupplierService {
     /* Mapping: Entity -> Dataclass<Company> */
     public Company mapToCompanyDataclass(SupplierEntity entity) {
         UUID supplierId = entity.getSupplierId();
+        String email = entity.getEmail();
         Address address = new Address(
                 entity.getName(),
                 entity.getStreet(),
                 entity.getCity(),
                 entity.getZip()
         );
-        return new Company(entity.getSupplierId() ,entity.getEmail(), address);
+        return new Company(supplierId , email, address);
     }
 
     /* Mapping: Entity -> Dataclass<Supplier> */
     /* prepped for future use */
     public Supplier mapToSupplierDataclass(SupplierEntity entity, SupplierNrEntity supNrEntity) {
         UUID supplierId = entity.getSupplierId();
+        String email = entity.getEmail();
         Address address = new Address(
                 entity.getName(),
                 entity.getStreet(),
@@ -63,10 +65,10 @@ public class SupplierService {
         //TODO supplierNumber handeln sobald AssignmentService impelemtiert.
         SupplierNumber supplierNumber = null;
 
-        return new Supplier(entity.getSupplierId(), entity.getEmail(), address, supplierNumber);
+        return new Supplier(supplierId, email, address, supplierNumber);
     }
 
-    public List<Company> getCompanies(){
+    public List<Company> getDatabaseEntries(){
         List<SupplierEntity> entities = supplierRepository.findAll();
         return entities.stream()
                 .map(this::mapToCompanyDataclass)

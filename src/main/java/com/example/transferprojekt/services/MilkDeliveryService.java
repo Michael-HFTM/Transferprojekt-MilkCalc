@@ -16,9 +16,17 @@ import java.util.UUID;
 public class MilkDeliveryService {
 
     private final MilkDeliveryRepository milkDeliveryRepository;
+    private final SupplierNrService supplierNrService;
 
-    public MilkDeliveryService(MilkDeliveryRepository milkDeliveryRepository) {
+    public MilkDeliveryService(MilkDeliveryRepository milkDeliveryRepository, SupplierNrService supplierNrService) {
         this.milkDeliveryRepository = milkDeliveryRepository;
+        this.supplierNrService = supplierNrService;
+
+    }
+
+    public MilkDeliveryEntity save(MilkDelivery milkDelivery) {
+        MilkDeliveryEntity entity = mapToEntity(milkDelivery);
+        return milkDeliveryRepository.save(entity);
     }
 
     public MilkDeliveryEntity mapToEntity(MilkDelivery milkDelivery) {
@@ -26,8 +34,16 @@ public class MilkDeliveryService {
         entity.setAmountKg(milkDelivery.getAmountKg());
         entity.setDate(milkDelivery.getDate());
         entity.setTimeWindow(milkDelivery.getTimeWindow());
-        //TODO hanlde supplierNr
-        entity.setSupplierNr(new SupplierNrEntity());
+
+        SupplierNumber supplierNumber = milkDelivery.getSupplierNumber();
+        if (supplierNrService.exists(supplierNumber.getId())) {
+            /* fetch exisiting supplierNr from DB */
+            SupplierNrEntity supplierNrEntity = supplierNrService.getEntityById(supplierNumber.getId());
+            entity.setSupplierNr(supplierNrEntity);
+        } else {
+            /* create new supplierNr in DB */
+            entity.setSupplierNr(supplierNrService.save(supplierNumber));
+        }
         return entity;
     }
 
@@ -36,19 +52,19 @@ public class MilkDeliveryService {
         BigDecimal amountKg = entity.getAmountKg();
         LocalDate date = entity.getDate();
         TimeWindow timeWindow = entity.getTimeWindow();
-        //TODO hanlde supplierNr
-        //SupplierNumber supplierNumber = entity.getSupplierNr();
-        return new MilkDelivery(deliveryId,amountKg,date,new SupplierNumber(99),timeWindow);
+        SupplierNumber supplierNumber = supplierNrService.mapToDataclass(entity.getSupplierNr());
+
+        return new MilkDelivery(deliveryId,amountKg,date,supplierNumber,timeWindow);
     }
 
-    public List<MilkDelivery> getMilkDeliveries(){
+    public List<MilkDelivery> getDatabaseEntries(){
         List<MilkDeliveryEntity> entities = milkDeliveryRepository.findAll();
         return entities.stream()
                 .map(this::mapToDataclass)
                 .toList();
     }
 
-    public MilkDeliveryEntity getMilkDeliveryById(UUID deliveryId){
+    public MilkDeliveryEntity getById(UUID deliveryId){
         return milkDeliveryRepository.findById(deliveryId).orElse(null);
     }
 

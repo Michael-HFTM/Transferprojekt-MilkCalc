@@ -23,12 +23,12 @@ public class SupplierNrService {
     }
 
     // Entity -> DTO
-    private SupplierNumber mapToDataclass(SupplierNrEntity entity) {
+    public SupplierNumber mapToDataclass(SupplierNrEntity entity) {
         return new SupplierNumber(entity.getSupplierNr());
     }
 
     // DTO -> Entity
-    private SupplierNrEntity mapToEntity(SupplierNumber dataclass) {
+    public SupplierNrEntity mapToEntity(SupplierNumber dataclass) {
         SupplierNrEntity entity = new SupplierNrEntity();
         entity.setSupplierNr(dataclass.getId());
         return entity;
@@ -37,6 +37,11 @@ public class SupplierNrService {
     public SupplierNumber getById(int id) {
         return supplierNrRepository.findById(id)
                 .map(this::mapToDataclass)
+                .orElseThrow(() -> new EntityNotFoundException("SupplierNrEntity not found for id: " + id));
+    }
+
+    public SupplierNrEntity getEntityById(int id) {
+        return supplierNrRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("SupplierNrEntity not found for id: " + id));
     }
 
