@@ -45,11 +45,11 @@ public class AssignmentEntity {
         this.supplierNr = supplierNr;
     }
 
-    public SupplierEntity getSupplierId() {
+    public SupplierEntity getSupplierEntity() {
         return supplierId;
     }
 
-    public void setSupplierId(SupplierEntity supplierId) {
+    public void setSupplierEntity(SupplierEntity supplierId) {
         this.supplierId = supplierId;
     }
 

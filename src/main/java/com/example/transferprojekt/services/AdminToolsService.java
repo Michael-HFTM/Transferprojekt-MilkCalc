@@ -30,7 +30,6 @@ public class AdminToolsService {
             assignmentRepository.deleteAll();
             milkDeliveryRepository.deleteAll();
             supplierRepository.deleteAll();
-            supplierNrRepository.deleteAll();
             System.out.println("All tables flushed!");
         } else {
             System.out.println("Invalid key, abborting");

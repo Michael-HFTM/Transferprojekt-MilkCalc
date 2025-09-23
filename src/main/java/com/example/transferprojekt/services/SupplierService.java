@@ -2,11 +2,9 @@ package com.example.transferprojekt.services;
 
 import com.example.transferprojekt.dataclasses.Address;
 import com.example.transferprojekt.dataclasses.Company;
-import com.example.transferprojekt.dataclasses.Supplier;
-import com.example.transferprojekt.dataclasses.SupplierNumber;
 import com.example.transferprojekt.jpa.entities.SupplierEntity;
-import com.example.transferprojekt.jpa.entities.SupplierNrEntity;
 import com.example.transferprojekt.jpa.repositories.SupplierRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,7 +19,7 @@ public class SupplierService {
         this.supplierRepository = supplierRepository;
     }
 
-    public SupplierEntity saveCompany(Company company) {
+    public SupplierEntity save(Company company) {
         SupplierEntity entity = mapToEntity(company);
         return supplierRepository.save(entity);
     }
@@ -39,7 +37,7 @@ public class SupplierService {
     }
 
     /* Mapping: Entity -> Dataclass<Company> */
-    public Company mapToCompanyDataclass(SupplierEntity entity) {
+    public Company mapToDataclass(SupplierEntity entity) {
         UUID supplierId = entity.getSupplierId();
         String email = entity.getEmail();
         Address address = new Address(
@@ -51,35 +49,23 @@ public class SupplierService {
         return new Company(supplierId , email, address);
     }
 
-    /* Mapping: Entity -> Dataclass<Supplier> */
-    /* prepped for future use */
-    public Supplier mapToSupplierDataclass(SupplierEntity entity, SupplierNrEntity supNrEntity) {
-        UUID supplierId = entity.getSupplierId();
-        String email = entity.getEmail();
-        Address address = new Address(
-                entity.getName(),
-                entity.getStreet(),
-                entity.getCity(),
-                entity.getZip()
-        );
-        //TODO supplierNumber handeln sobald AssignmentService impelemtiert.
-        SupplierNumber supplierNumber = null;
-
-        return new Supplier(supplierId, email, address, supplierNumber);
-    }
-
     public List<Company> getDatabaseEntries(){
         List<SupplierEntity> entities = supplierRepository.findAll();
         return entities.stream()
-                .map(this::mapToCompanyDataclass)
+                .map(this::mapToDataclass)
                 .toList();
     }
 
-    public SupplierEntity getSupplierById(UUID supplierId){
+    public SupplierEntity getById(UUID supplierId){
         return supplierRepository.findById(supplierId).orElse(null);
     }
 
-    public boolean deleteSupplierById(UUID supplierId){
+    public SupplierEntity getEntityById(UUID id) {
+        return supplierRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("SupplierNrEntity not found for id: " + id));
+    }
+
+    public boolean deleteById(UUID supplierId){
         try {
             supplierRepository.deleteById(supplierId);
             return true;
