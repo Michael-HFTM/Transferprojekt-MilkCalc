@@ -57,7 +57,7 @@ public class Terminal {
                         break;
 
                     case 4:
-                        printInsertTestdata();
+                        printInsertTestdata(input);
                         break;
 
                     case 5:
@@ -176,10 +176,17 @@ public class Terminal {
         }
     }
 
-    private void printInsertTestdata(){
+    private void printInsertTestdata(Scanner input){
 
-        //TODO: Clear Tables after user confirmation
-        testdataService.insertTestdata();
+        System.out.println("To ensure a valid state, this operatione will delete all table data first.");
+        System.out.print("Continue? (y/n): ");
+        String choice = input.nextLine();
+        if (choice.equalsIgnoreCase("y")) {
+            adminToolsService.flushAllDataTables("DELETE");
+            testdataService.insertTestdata();
+        } else {
+            System.out.println("Aborting");
+        }
     }
 
     private void printFlushAllDataTables(Scanner input){
@@ -187,7 +194,7 @@ public class Terminal {
         System.out.println("Confirm deltion of all table data.");
         System.out.print("Type 'DELETE': ");
         String key = input.nextLine();
-        adminToolsService.flushAllTables(key);
+        adminToolsService.flushAllDataTables(key);
     }
 
 
