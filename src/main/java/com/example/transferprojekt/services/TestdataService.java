@@ -48,8 +48,8 @@ public class TestdataService {
 
         /* Creating assignments */
         Assignment as1 = new Assignment(companies.get(0).getCompanyId(),snr1,LocalDate.parse("2025-01-01"));
-        Assignment as2 = new Assignment(companies.get(1).getCompanyId(),snr1,LocalDate.parse("2025-01-01"));
-        Assignment as3 = new Assignment(companies.get(2).getCompanyId(),snr1,LocalDate.parse("2025-01-01"),LocalDate.parse("2026-12-31"));
+        Assignment as2 = new Assignment(companies.get(1).getCompanyId(),snr2,LocalDate.parse("2025-01-01"));
+        Assignment as3 = new Assignment(companies.get(2).getCompanyId(),snr3,LocalDate.parse("2025-01-01"),LocalDate.parse("2026-12-31"));
         ArrayList<Assignment> assignments = new ArrayList<>(List.of(as1,as2,as3));
         System.out.println();
         System.out.println("Newly created Dataclasses:");
