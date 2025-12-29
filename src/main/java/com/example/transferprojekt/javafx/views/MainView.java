@@ -86,9 +86,9 @@ public class MainView extends BorderPane {
         Tab deliveryTab = new Tab("Milchlieferungen");
         deliveryTab.setContent(new MilkDeliveryView(milkDeliveryService, supplierNrService));
 
-        // Tab 4: Übersicht/Dashboard (optional)
+        // Tab 4: Dashboard
         Tab dashboardTab = new Tab("Dashboard");
-        dashboardTab.setContent(createPlaceholderView("Dashboard"));
+        dashboardTab.setContent(new DashboardView(milkDeliveryService, supplierService));
 
         tabPane.getTabs().addAll(dashboardTab, supplierTab, assignmentTab, deliveryTab);
 
