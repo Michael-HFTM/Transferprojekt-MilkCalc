@@ -1,5 +1,6 @@
 package com.example.transferprojekt.javafx.views;
 
+import com.example.transferprojekt.services.SupplierService;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
@@ -9,12 +10,15 @@ public class MainView extends BorderPane {
 
     private final TabPane tabPane;
     private final MenuBar menuBar;
+    private final SupplierService supplierService;
 
-    public MainView() {
+    public MainView(SupplierService supplierService) {
+        this.supplierService = supplierService;
+
         // MenuBar erstellen
         menuBar = createMenuBar();
 
-        // TabPane fuer verschiedene Bereiche erstellen
+        // TabPane für verschiedene Bereiche erstellen
         tabPane = createTabPane();
 
         // Layout zusammenbauen
@@ -28,13 +32,13 @@ public class MainView extends BorderPane {
     private MenuBar createMenuBar() {
         MenuBar menuBar = new MenuBar();
 
-        // Datei-Menue
+        // Datei-Menü
         Menu fileMenu = new Menu("Datei");
         MenuItem exitItem = new MenuItem("Beenden");
         exitItem.setOnAction(e -> System.exit(0));
         fileMenu.getItems().addAll(exitItem);
 
-        // Daten-Menue
+        // Daten-Menü
         Menu dataMenu = new Menu("Daten");
         MenuItem refreshItem = new MenuItem("Aktualisieren");
         refreshItem.setOnAction(e -> refreshAllViews());
@@ -44,7 +48,7 @@ public class MainView extends BorderPane {
         clearDataItem.setOnAction(e -> clearAllData());
         dataMenu.getItems().addAll(refreshItem, new SeparatorMenuItem(), testDataItem, clearDataItem);
 
-        // Hilfe-Menue
+        // Hilfe-Menü
         Menu helpMenu = new Menu("Hilfe");
         MenuItem aboutItem = new MenuItem("Über MilkCalc");
         aboutItem.setOnAction(e -> showAboutDialog());
@@ -58,9 +62,9 @@ public class MainView extends BorderPane {
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
-        // Tab 1: Lieferanten
+        // Tab 1: Lieferanten (with real SupplierView!)
         Tab supplierTab = new Tab("Lieferanten");
-        supplierTab.setContent(createPlaceholderView("Lieferanten-Verwaltung"));
+        supplierTab.setContent(new SupplierView(supplierService));
 
         // Tab 2: Zuweisungen
         Tab assignmentTab = new Tab("Zuweisungen");
@@ -70,7 +74,7 @@ public class MainView extends BorderPane {
         Tab deliveryTab = new Tab("Milchlieferungen");
         deliveryTab.setContent(createPlaceholderView("Milchlieferungen-Verwaltung"));
 
-        // Tab 4: Uebersicht/Dashboard (optional)
+        // Tab 4: Übersicht/Dashboard (optional)
         Tab dashboardTab = new Tab("Dashboard");
         dashboardTab.setContent(createPlaceholderView("Dashboard"));
 
@@ -80,7 +84,7 @@ public class MainView extends BorderPane {
     }
 
     /**
-     * Erstellt eine Platzhalter-Ansicht fuer Tabs, die noch nicht implementiert sind
+     * Erstellt eine Platzhalter-Ansicht für Tabs, die noch nicht implementiert sind
      */
     private VBox createPlaceholderView(String title) {
         VBox placeholder = new VBox(20);
@@ -99,7 +103,7 @@ public class MainView extends BorderPane {
     }
 
     /**
-     * Aktualisiert alle Views (wird spaeter mit echten Services verbunden)
+     * Aktualisiert alle Views (wird später mit echten Services verbunden)
      */
     private void refreshAllViews() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -113,7 +117,7 @@ public class MainView extends BorderPane {
     }
 
     /**
-     * Fuegt Testdaten ein (wird spaeter mit TestdataService verbunden)
+     * Fügt Testdaten ein (wird später mit TestdataService verbunden)
      */
     private void insertTestData() {
         Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
@@ -136,7 +140,7 @@ public class MainView extends BorderPane {
     }
 
     /**
-     * Loescht alle Daten (wird spaeter mit AdminToolsService verbunden)
+     * Löscht alle Daten (wird später mit AdminToolsService verbunden)
      */
     private void clearAllData() {
         Alert confirmation = new Alert(Alert.AlertType.WARNING);
@@ -146,7 +150,7 @@ public class MainView extends BorderPane {
 
         confirmation.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                // Zweite Bestätigung fuer kritische Aktion
+                // Zweite Bestätigung für kritische Aktion
                 TextInputDialog dialog = new TextInputDialog();
                 dialog.setTitle("Bestätigung");
                 dialog.setHeaderText("Geben Sie 'DELETE' ein, um zu bestätigen:");
@@ -175,25 +179,23 @@ public class MainView extends BorderPane {
     }
 
     /**
-     * Zeigt einen "Ueber"-Dialog
+     * Zeigt einen "Über"-Dialog
      */
     private void showAboutDialog() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Über MilkCalc");
         alert.setHeaderText("MilkCalc - Milchlieferungs-Verwaltung");
         alert.setContentText(
-                """
-                Version: 0.0.1-SNAPSHOT
-                Entwickelt als POC im Rahmen einer Praxisarbeit
-                Technologien: JavaFX + Spring Boot + PostgreSQL
-                
-                Michael Gasser - 2025"""
+                "Version: 0.0.1-SNAPSHOT\n" +
+                        "Entwickelt als Praxisarbeit\n" +
+                        "Technologien: JavaFX + Spring Boot + PostgreSQL\n\n" +
+                        "© 2025"
         );
         alert.showAndWait();
     }
 
     /**
-     * Gibt Zugriff auf ein bestimmtes Tab (für spaetere View-Updates)
+     * Gibt Zugriff auf ein bestimmtes Tab (für spätere View-Updates)
      */
     public Tab getTab(int index) {
         return tabPane.getTabs().get(index);
