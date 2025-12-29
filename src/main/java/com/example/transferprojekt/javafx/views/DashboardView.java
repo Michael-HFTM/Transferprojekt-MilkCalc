@@ -35,6 +35,7 @@ public class DashboardView extends BorderPane {
     private Label allAverageAmountValue;
 
     // Statistic Labels - Selected Supplier
+    private Label selectedSupplierTitle;
     private Label selectedDeliveryCountValue;
     private Label selectedTotalAmountValue;
     private Label selectedAverageAmountValue;
@@ -142,16 +143,16 @@ public class DashboardView extends BorderPane {
 
         fromDatePicker = new DatePicker();
         fromDatePicker.setPromptText("Von");
-        // Default: First day of current month
         LocalDate now = LocalDate.now();
-        fromDatePicker.setValue(now.withDayOfMonth(1));
+        // Default: First day of current year
+        fromDatePicker.setValue(now.withMonth(1).withDayOfMonth(1));
 
         Label toLabel = new Label("bis");
 
         toDatePicker = new DatePicker();
         toDatePicker.setPromptText("Bis");
-        // Default: Last day of current month
-        toDatePicker.setValue(now.withDayOfMonth(now.lengthOfMonth()));
+        // Default: Last day of current year
+        toDatePicker.setValue(now.withMonth(12).withDayOfMonth(31));
 
         dateRangeBox.getChildren().addAll(dateRangeLabel, fromDatePicker, toLabel, toDatePicker);
 
@@ -161,7 +162,7 @@ public class DashboardView extends BorderPane {
         calculateButton.setOnAction(e -> calculateStatistics());
 
         HBox buttonBox = new HBox();
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+        buttonBox.setAlignment(Pos.CENTER_LEFT);
         buttonBox.getChildren().add(calculateButton);
 
         section.getChildren().addAll(
@@ -253,8 +254,8 @@ public class DashboardView extends BorderPane {
         section.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #ddd; -fx-border-radius: 5; -fx-background-radius: 5;");
         section.setMinWidth(350);
 
-        Label sectionTitle = new Label("Statistiken - Ausgewählter Lieferant");
-        sectionTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        selectedSupplierTitle = new Label();
+        selectedSupplierTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
         // Statistics Grid - left-aligned with labels and values
         GridPane statsGrid = new GridPane();
@@ -296,7 +297,7 @@ public class DashboardView extends BorderPane {
         col2.setMinWidth(100);
         statsGrid.getColumnConstraints().addAll(col1, col2);
 
-        section.getChildren().addAll(sectionTitle, statsGrid);
+        section.getChildren().addAll(selectedSupplierTitle, statsGrid);
 
         return section;
     }
@@ -329,6 +330,9 @@ public class DashboardView extends BorderPane {
                 // Show selected supplier section
                 selectedSupplierSection.setVisible(true);
                 selectedSupplierSection.setManaged(true);
+
+                // Set Title Label
+                selectedSupplierTitle.setText("Statistiken - " + selectedSupplier.getAddress().getName());
 
                 // Get all assignments for the selected supplier
                 List<Assignment> allAssignments = assignmentService.getDatabaseEntries();
