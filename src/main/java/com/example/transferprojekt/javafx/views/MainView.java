@@ -1,6 +1,8 @@
 package com.example.transferprojekt.javafx.views;
 
+import com.example.transferprojekt.services.AssignmentService;
 import com.example.transferprojekt.services.SupplierService;
+import com.example.transferprojekt.services.SupplierNrService;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
@@ -11,9 +13,15 @@ public class MainView extends BorderPane {
     private final TabPane tabPane;
     private final MenuBar menuBar;
     private final SupplierService supplierService;
+    private final AssignmentService assignmentService;
+    private final SupplierNrService supplierNrService;
 
-    public MainView(SupplierService supplierService) {
+    public MainView(SupplierService supplierService,
+                    AssignmentService assignmentService,
+                    SupplierNrService supplierNrService) {
         this.supplierService = supplierService;
+        this.assignmentService = assignmentService;
+        this.supplierNrService = supplierNrService;
 
         // MenuBar erstellen
         menuBar = createMenuBar();
@@ -66,9 +74,9 @@ public class MainView extends BorderPane {
         Tab supplierTab = new Tab("Lieferanten");
         supplierTab.setContent(new SupplierView(supplierService));
 
-        // Tab 2: Zuweisungen
+        // Tab 2: Zuweisungen (with real AssignmentView!)
         Tab assignmentTab = new Tab("Zuweisungen");
-        assignmentTab.setContent(createPlaceholderView("Zuweisungen-Verwaltung"));
+        assignmentTab.setContent(new AssignmentView(assignmentService, supplierService, supplierNrService));
 
         // Tab 3: Milchlieferungen
         Tab deliveryTab = new Tab("Milchlieferungen");
