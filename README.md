@@ -29,8 +29,8 @@ docker ps
 # Dependencies installieren und Code kompilieren
 mvn clean compile
 
-# Anwendung starten
-mvn spring-boot:run
+# CLI Anwendung starten
+mvn spring-boot:run -Pterminal
 ```
 
 ### 4. Anwendung testen
