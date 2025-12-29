@@ -19,8 +19,32 @@ public class SupplierService {
         this.supplierRepository = supplierRepository;
     }
 
+    /**
+     * Saves a supplier (CREATE or UPDATE)
+     * If company has an ID, it updates; otherwise creates new
+     */
     public SupplierEntity save(Company company) {
-        SupplierEntity entity = mapToEntity(company);
+        SupplierEntity entity;
+
+        // Check if this is an update (has UUID) or create (no UUID)
+        if (company.getCompanyId() != null) {
+            // UPDATE: Load existing entity
+            entity = supplierRepository.findById(company.getCompanyId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Supplier not found for id: " + company.getCompanyId()));
+
+            // Update fields
+            entity.setName(company.getAddress().getName());
+            entity.setStreet(company.getAddress().getStreet());
+            entity.setZip(company.getAddress().getZip());
+            entity.setCity(company.getAddress().getCity());
+            entity.setEmail(company.getMail());
+
+        } else {
+            // CREATE: New entity
+            entity = mapToEntity(company);
+        }
+
         return supplierRepository.save(entity);
     }
 
@@ -32,7 +56,6 @@ public class SupplierService {
         entity.setZip(company.getAddress().getZip());
         entity.setCity(company.getAddress().getCity());
         entity.setEmail(company.getMail());
-        // Bei Bedarf SupplierNr noch ergänzen
         return entity;
     }
 
@@ -62,7 +85,7 @@ public class SupplierService {
 
     public SupplierEntity getEntityById(UUID id) {
         return supplierRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("SupplierNrEntity not found for id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("SupplierEntity not found for id: " + id));
     }
 
     public boolean deleteById(UUID supplierId){

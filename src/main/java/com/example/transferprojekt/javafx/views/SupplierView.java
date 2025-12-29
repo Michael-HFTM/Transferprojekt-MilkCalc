@@ -1,6 +1,7 @@
 package com.example.transferprojekt.javafx.views;
 
 import com.example.transferprojekt.dataclasses.Company;
+import com.example.transferprojekt.javafx.dialogs.SupplierDialog;
 import com.example.transferprojekt.services.SupplierService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -217,12 +218,18 @@ public class SupplierView extends BorderPane {
      * Opens dialog to add a new supplier
      */
     private void addSupplier() {
-        // TODO: Will be implemented in next step
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Hinzufügen");
-        alert.setHeaderText("Neuen Lieferanten hinzufügen");
-        alert.setContentText("Diese Funktion wird im nächsten Schritt implementiert.");
-        alert.showAndWait();
+        SupplierDialog.showAddDialog().ifPresent(newSupplier -> {
+            try {
+                supplierService.save(newSupplier);
+                showInfoDialog("Erfolg", "Lieferant wurde erfolgreich hinzugefügt.");
+                loadSuppliers();
+
+            } catch (Exception e) {
+                showErrorDialog("Fehler beim Hinzufügen",
+                        "Lieferant konnte nicht gespeichert werden.",
+                        e.getMessage());
+            }
+        });
     }
 
     /**
@@ -234,12 +241,18 @@ public class SupplierView extends BorderPane {
             return;
         }
 
-        // TODO: Will be implemented in next step
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Bearbeiten");
-        alert.setHeaderText("Lieferanten bearbeiten");
-        alert.setContentText("Ausgewählt: " + selectedSupplier.getAddress().getName() + "\n\nDiese Funktion wird im nächsten Schritt implementiert.");
-        alert.showAndWait();
+        SupplierDialog.showEditDialog(selectedSupplier).ifPresent(updatedSupplier -> {
+            try {
+                supplierService.save(updatedSupplier);
+                showInfoDialog("Erfolg", "Lieferant wurde erfolgreich aktualisiert.");
+                loadSuppliers();
+
+            } catch (Exception e) {
+                showErrorDialog("Fehler beim Speichern",
+                        "Änderungen konnten nicht gespeichert werden.",
+                        e.getMessage());
+            }
+        });
     }
 
     /**
