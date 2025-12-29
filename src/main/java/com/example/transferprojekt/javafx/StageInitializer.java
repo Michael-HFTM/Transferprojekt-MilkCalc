@@ -1,10 +1,7 @@
 package com.example.transferprojekt.javafx;
 
 import com.example.transferprojekt.javafx.views.MainView;
-import com.example.transferprojekt.services.AssignmentService;
-import com.example.transferprojekt.services.MilkDeliveryService;
-import com.example.transferprojekt.services.SupplierService;
-import com.example.transferprojekt.services.SupplierNrService;
+import com.example.transferprojekt.services.*;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.springframework.context.ApplicationListener;
@@ -17,34 +14,47 @@ public class StageInitializer implements ApplicationListener<StageReadyEvent> {
     private final AssignmentService assignmentService;
     private final SupplierNrService supplierNrService;
     private final MilkDeliveryService milkDeliveryService;
+    private final TestdataService testdataService;
+    private final AdminToolsService adminToolsService;
 
     public StageInitializer(SupplierService supplierService,
                             AssignmentService assignmentService,
                             SupplierNrService supplierNrService,
-                            MilkDeliveryService milkDeliveryService) {
+                            MilkDeliveryService milkDeliveryService,
+                            TestdataService testdataService,
+                            AdminToolsService adminToolsService) {
         this.supplierService = supplierService;
         this.assignmentService = assignmentService;
         this.supplierNrService = supplierNrService;
         this.milkDeliveryService = milkDeliveryService;
+        this.testdataService = testdataService;
+        this.adminToolsService = adminToolsService;
     }
 
     @Override
     public void onApplicationEvent(StageReadyEvent event) {
         Stage stage = event.getStage();
 
-        // Erstelle MainView mit Services
-        MainView mainView = new MainView(supplierService, assignmentService, supplierNrService, milkDeliveryService);
+        // Create MainView with all required services
+        MainView mainView = new MainView(
+                supplierService,
+                assignmentService,
+                supplierNrService,
+                milkDeliveryService,
+                testdataService,
+                adminToolsService
+        );
 
-        // Scene mit größerem Fenster für die Anwendung
+        // Create scene with appropriate size
         Scene scene = new Scene(mainView, 1200, 800);
 
-        // Fenster konfigurieren
+        // Configure stage
         stage.setScene(scene);
         stage.setTitle("MilkCalc - Milchlieferungs-Verwaltung");
         stage.setMinWidth(800);
         stage.setMinHeight(600);
 
-        // Fenster anzeigen
+        // Show stage
         stage.show();
     }
 }

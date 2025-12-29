@@ -1,9 +1,11 @@
 package com.example.transferprojekt.javafx.views;
 
+import com.example.transferprojekt.services.AdminToolsService;
 import com.example.transferprojekt.services.AssignmentService;
 import com.example.transferprojekt.services.MilkDeliveryService;
 import com.example.transferprojekt.services.SupplierService;
 import com.example.transferprojekt.services.SupplierNrService;
+import com.example.transferprojekt.services.TestdataService;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
@@ -17,15 +19,21 @@ public class MainView extends BorderPane {
     private final AssignmentService assignmentService;
     private final SupplierNrService supplierNrService;
     private final MilkDeliveryService milkDeliveryService;
+    private final TestdataService testdataService;
+    private final AdminToolsService adminToolsService;
 
     public MainView(SupplierService supplierService,
                     AssignmentService assignmentService,
                     SupplierNrService supplierNrService,
-                    MilkDeliveryService milkDeliveryService) {
+                    MilkDeliveryService milkDeliveryService,
+                    TestdataService testdataService,
+                    AdminToolsService adminToolsService) {
         this.supplierService = supplierService;
         this.assignmentService = assignmentService;
         this.supplierNrService = supplierNrService;
         this.milkDeliveryService = milkDeliveryService;
+        this.testdataService = testdataService;
+        this.adminToolsService = adminToolsService;
 
         // MenuBar erstellen
         menuBar = createMenuBar();
@@ -74,19 +82,19 @@ public class MainView extends BorderPane {
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
-        // Tab 1: Lieferanten (with real SupplierView!)
+        // Tab 1: Lieferanten
         Tab supplierTab = new Tab("Lieferanten");
         supplierTab.setContent(new SupplierView(supplierService));
 
-        // Tab 2: Zuweisungen (with real AssignmentView!)
+        // Tab 2: Zuweisungen
         Tab assignmentTab = new Tab("Zuweisungen");
         assignmentTab.setContent(new AssignmentView(assignmentService, supplierService, supplierNrService));
 
-        // Tab 3: Milchlieferungen (with real MilkDeliveryView!)
+        // Tab 3: Milchlieferungen
         Tab deliveryTab = new Tab("Milchlieferungen");
         deliveryTab.setContent(new MilkDeliveryView(milkDeliveryService, supplierNrService));
 
-        // Tab 4: Dashboard (with AssignmentService for supplier filter!)
+        // Tab 4: Dashboard
         Tab dashboardTab = new Tab("Dashboard");
         dashboardTab.setContent(new DashboardView(milkDeliveryService, supplierService, assignmentService));
 
@@ -96,73 +104,94 @@ public class MainView extends BorderPane {
     }
 
     /**
-     * Erstellt eine Platzhalter-Ansicht für Tabs, die noch nicht implementiert sind
-     */
-    private VBox createPlaceholderView(String title) {
-        VBox placeholder = new VBox(20);
-        placeholder.setPadding(new Insets(40));
-        placeholder.setStyle("-fx-alignment: center;");
-
-        Label titleLabel = new Label(title);
-        titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
-
-        Label infoLabel = new Label("Diese Ansicht wird in den nächsten Schritten implementiert.");
-        infoLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: gray;");
-
-        placeholder.getChildren().addAll(titleLabel, infoLabel);
-
-        return placeholder;
-    }
-
-    /**
-     * Aktualisiert alle Views (wird später mit echten Services verbunden)
+     * Aktualisiert alle Views durch Neuerstellung mit frischen Daten
      */
     private void refreshAllViews() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Aktualisieren");
-        alert.setHeaderText(null);
-        alert.setContentText("Alle Ansichten werden aktualisiert...");
-        alert.showAndWait();
+        try {
+            // Recreate all tabs with fresh data
+            Tab supplierTab = tabPane.getTabs().get(1);
+            supplierTab.setContent(new SupplierView(supplierService));
 
-        // TODO: Später mit echten Service-Aufrufen ersetzen
-        System.out.println("Refreshing all views...");
+            Tab assignmentTab = tabPane.getTabs().get(2);
+            assignmentTab.setContent(new AssignmentView(assignmentService, supplierService, supplierNrService));
+
+            Tab deliveryTab = tabPane.getTabs().get(3);
+            deliveryTab.setContent(new MilkDeliveryView(milkDeliveryService, supplierNrService));
+
+            Tab dashboardTab = tabPane.getTabs().get(0);
+            dashboardTab.setContent(new DashboardView(milkDeliveryService, supplierService, assignmentService));
+
+            // Switch to dashboard to show updated statistics
+            tabPane.getSelectionModel().select(dashboardTab);
+
+        } catch (Exception e) {
+            showError("Fehler beim Aktualisieren", "Die Views konnten nicht aktualisiert werden.", e.getMessage());
+        }
     }
 
     /**
-     * Fügt Testdaten ein (wird später mit TestdataService verbunden)
+     * Fügt Testdaten ein (löscht vorher alle bestehenden Daten)
      */
     private void insertTestData() {
         Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
         confirmation.setTitle("Testdaten einfügen");
         confirmation.setHeaderText("Testdaten einfügen?");
-        confirmation.setContentText("Dies wird alle vorhandenen Daten löschen und Testdaten einfügen.");
+        confirmation.setContentText(
+                "Dies wird alle vorhandenen Daten löschen und Testdaten einfügen.\n\n" +
+                        "Eingefügte Daten:\n" +
+                        "- 3 Lieferanten (Hof Müller, Biofarm Huber, Alpenmilch AG)\n" +
+                        "- 3 Zuweisungen\n" +
+                        "- 4 Milchlieferungen"
+        );
 
         confirmation.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                // TODO: TestdataService aufrufen
-                System.out.println("Inserting test data...");
+                try {
+                    // 1. Clear existing data
+                    adminToolsService.flushAllDataTables("DELETE");
 
-                Alert success = new Alert(Alert.AlertType.INFORMATION);
-                success.setTitle("Erfolg");
-                success.setHeaderText(null);
-                success.setContentText("Testdaten wurden erfolgreich eingefügt!");
-                success.showAndWait();
+                    // 2. Insert test data
+                    testdataService.insertTestdata();
+
+                    // 3. Refresh all views
+                    refreshAllViews();
+
+                    // 4. Show success message
+                    Alert success = new Alert(Alert.AlertType.INFORMATION);
+                    success.setTitle("Erfolg");
+                    success.setHeaderText("Testdaten erfolgreich eingefügt");
+                    success.setContentText(
+                            "3 Lieferanten, 3 Zuweisungen und 4 Milchlieferungen wurden erstellt.\n\n" +
+                                    "Sie befinden sich jetzt im Dashboard mit den aktualisierten Statistiken."
+                    );
+                    success.showAndWait();
+
+                } catch (Exception e) {
+                    showError("Fehler", "Testdaten konnten nicht eingefügt werden", e.getMessage());
+                    e.printStackTrace(); // For debugging
+                }
             }
         });
     }
 
     /**
-     * Löscht alle Daten (wird später mit AdminToolsService verbunden)
+     * Löscht alle Daten aus der Datenbank (mit doppelter Bestätigung)
      */
     private void clearAllData() {
         Alert confirmation = new Alert(Alert.AlertType.WARNING);
         confirmation.setTitle("Alle Daten löschen");
         confirmation.setHeaderText("WARNUNG: Alle Daten löschen?");
-        confirmation.setContentText("Diese Aktion kann nicht rückgängig gemacht werden!");
+        confirmation.setContentText(
+                "Diese Aktion kann nicht rückgängig gemacht werden!\n\n" +
+                        "Folgende Daten werden gelöscht:\n" +
+                        "- Alle Lieferanten\n" +
+                        "- Alle Zuweisungen\n" +
+                        "- Alle Milchlieferungen"
+        );
 
         confirmation.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                // Zweite Bestätigung für kritische Aktion
+                // Second confirmation with text input
                 TextInputDialog dialog = new TextInputDialog();
                 dialog.setTitle("Bestätigung");
                 dialog.setHeaderText("Geben Sie 'DELETE' ein, um zu bestätigen:");
@@ -170,19 +199,29 @@ public class MainView extends BorderPane {
 
                 dialog.showAndWait().ifPresent(input -> {
                     if ("DELETE".equals(input)) {
-                        // TODO: AdminToolsService aufrufen
-                        System.out.println("Deleting all data...");
+                        try {
+                            // Call AdminToolsService
+                            adminToolsService.flushAllDataTables("DELETE");
 
-                        Alert success = new Alert(Alert.AlertType.INFORMATION);
-                        success.setTitle("Erfolg");
-                        success.setHeaderText(null);
-                        success.setContentText("Alle Daten wurden gelöscht!");
-                        success.showAndWait();
+                            // Refresh all views
+                            refreshAllViews();
+
+                            // Show success
+                            Alert success = new Alert(Alert.AlertType.INFORMATION);
+                            success.setTitle("Erfolg");
+                            success.setHeaderText("Daten erfolgreich gelöscht");
+                            success.setContentText("Alle Daten wurden erfolgreich aus der Datenbank entfernt!");
+                            success.showAndWait();
+
+                        } catch (Exception e) {
+                            showError("Fehler", "Daten konnten nicht gelöscht werden", e.getMessage());
+                            e.printStackTrace(); // For debugging
+                        }
                     } else {
                         Alert error = new Alert(Alert.AlertType.ERROR);
                         error.setTitle("Abgebrochen");
-                        error.setHeaderText(null);
-                        error.setContentText("Falsche Eingabe. Aktion abgebrochen.");
+                        error.setHeaderText("Falsche Eingabe");
+                        error.setContentText("Die Aktion wurde abgebrochen.");
                         error.showAndWait();
                     }
                 });
@@ -203,6 +242,17 @@ public class MainView extends BorderPane {
                         "Technologien: JavaFX + Spring Boot + PostgreSQL\n\n" +
                         "© 2025"
         );
+        alert.showAndWait();
+    }
+
+    /**
+     * Helper method to show error dialogs
+     */
+    private void showError(String title, String header, String content) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
         alert.showAndWait();
     }
 
