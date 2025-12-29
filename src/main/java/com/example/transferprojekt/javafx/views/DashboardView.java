@@ -1,7 +1,9 @@
 package com.example.transferprojekt.javafx.views;
 
+import com.example.transferprojekt.dataclasses.Assignment;
 import com.example.transferprojekt.dataclasses.Company;
 import com.example.transferprojekt.dataclasses.MilkDelivery;
+import com.example.transferprojekt.services.AssignmentService;
 import com.example.transferprojekt.services.MilkDeliveryService;
 import com.example.transferprojekt.services.SupplierService;
 import javafx.geometry.Insets;
@@ -12,7 +14,6 @@ import javafx.scene.layout.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,7 @@ public class DashboardView extends BorderPane {
 
     private final MilkDeliveryService milkDeliveryService;
     private final SupplierService supplierService;
+    private final AssignmentService assignmentService;
 
     // Filter Controls
     private ComboBox<Company> supplierFilter;
@@ -32,9 +34,12 @@ public class DashboardView extends BorderPane {
     private Label totalAmountLabel;
     private Label averageAmountLabel;
 
-    public DashboardView(MilkDeliveryService milkDeliveryService, SupplierService supplierService) {
+    public DashboardView(MilkDeliveryService milkDeliveryService,
+                         SupplierService supplierService,
+                         AssignmentService assignmentService) {
         this.milkDeliveryService = milkDeliveryService;
         this.supplierService = supplierService;
+        this.assignmentService = assignmentService;
 
         initializeUI();
     }
@@ -74,7 +79,7 @@ public class DashboardView extends BorderPane {
         Label sectionTitle = new Label("Filter");
         sectionTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        // Supplier Filter (Optional)
+        // Supplier Filter
         HBox supplierBox = new HBox(10);
         supplierBox.setAlignment(Pos.CENTER_LEFT);
         Label supplierLabel = new Label("Lieferant:");
@@ -219,13 +224,18 @@ public class DashboardView extends BorderPane {
             // Filter by supplier if selected
             Company selectedSupplier = supplierFilter.getValue();
             if (selectedSupplier != null) {
+                // Get all assignments for the selected supplier
+                List<Assignment> allAssignments = assignmentService.getDatabaseEntries();
+
+                // Find all supplier numbers assigned to this supplier
+                List<Integer> supplierNumbersForSupplier = allAssignments.stream()
+                        .filter(a -> a.getSupplierId().equals(selectedSupplier.getCompanyId()))
+                        .map(a -> a.getSupplierNumber().getId())
+                        .collect(Collectors.toList());
+
+                // Filter deliveries by these supplier numbers
                 allDeliveries = allDeliveries.stream()
-                        .filter(d -> {
-                            // Note: MilkDelivery doesn't have supplier reference, only supplierNumber
-                            // We would need to lookup via Assignment to filter by supplier
-                            // For now, we'll skip this filter as it requires complex joins
-                            return true;
-                        })
+                        .filter(d -> supplierNumbersForSupplier.contains(d.getSupplierNumber().getId()))
                         .collect(Collectors.toList());
             }
 
