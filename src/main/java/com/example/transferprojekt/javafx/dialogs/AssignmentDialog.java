@@ -3,8 +3,10 @@ package com.example.transferprojekt.javafx.dialogs;
 import com.example.transferprojekt.dataclasses.Assignment;
 import com.example.transferprojekt.dataclasses.Company;
 import com.example.transferprojekt.dataclasses.SupplierNumber;
+import com.example.transferprojekt.javafx.utils.AsyncDatabaseTask;
 import com.example.transferprojekt.services.SupplierService;
 import com.example.transferprojekt.services.SupplierNrService;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -12,34 +14,24 @@ import javafx.scene.layout.GridPane;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public class AssignmentDialog extends Dialog<Assignment> {
 
-    // Form fields
     private ComboBox<Company> supplierComboBox;
     private ComboBox<SupplierNumber> supplierNumberComboBox;
     private DatePicker validFromDatePicker;
     private DatePicker validToDatePicker;
 
-    // Services
     private final SupplierService supplierService;
     private final SupplierNrService supplierNrService;
 
-    // Existing assignment (for edit mode)
     private final Assignment existingAssignment;
     private final boolean isEditMode;
 
-    /**
-     * Constructor for ADD mode
-     */
     private AssignmentDialog(SupplierService supplierService, SupplierNrService supplierNrService) {
         this(null, supplierService, supplierNrService);
     }
 
-    /**
-     * Constructor for EDIT mode
-     */
     private AssignmentDialog(Assignment existingAssignment,
                              SupplierService supplierService,
                              SupplierNrService supplierNrService) {
@@ -53,8 +45,12 @@ public class AssignmentDialog extends Dialog<Assignment> {
         setupValidation();
         setupResultConverter();
 
+        // Load data asynchronously
+        loadSuppliersAsync();
+        loadSupplierNumbersAsync();
+
         if (isEditMode) {
-            populateFields();
+            populateFieldsWhenDataLoaded();
         }
     }
 
@@ -64,14 +60,12 @@ public class AssignmentDialog extends Dialog<Assignment> {
                 "Bearbeiten Sie die Zuweisungs-Daten:" :
                 "Geben Sie die Daten der neuen Zuweisung ein:");
 
-        // Buttons
         ButtonType saveButtonType = new ButtonType(
                 isEditMode ? "Speichern" : "Hinzufügen",
                 ButtonBar.ButtonData.OK_DONE
         );
         getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
 
-        // Disable save button initially for add mode
         Button saveButton = (Button) getDialogPane().lookupButton(saveButtonType);
         if (!isEditMode) {
             saveButton.setDisable(true);
@@ -88,40 +82,7 @@ public class AssignmentDialog extends Dialog<Assignment> {
         supplierComboBox = new ComboBox<>();
         supplierComboBox.setPromptText("Lieferant auswählen");
         supplierComboBox.setPrefWidth(300);
-
-        // Load suppliers
-        try {
-            List<Company> suppliers = supplierService.getDatabaseEntries();
-            supplierComboBox.getItems().addAll(suppliers);
-
-            // Custom display: Show name instead of toString()
-            supplierComboBox.setCellFactory(param -> new ListCell<>() {
-                @Override
-                protected void updateItem(Company item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (empty || item == null) {
-                        setText(null);
-                    } else {
-                        setText(item.getAddress().getName() + " (" + item.getAddress().getCity() + ")");
-                    }
-                }
-            });
-
-            supplierComboBox.setButtonCell(new ListCell<>() {
-                @Override
-                protected void updateItem(Company item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (empty || item == null) {
-                        setText(null);
-                    } else {
-                        setText(item.getAddress().getName() + " (" + item.getAddress().getCity() + ")");
-                    }
-                }
-            });
-
-        } catch (Exception e) {
-            showError("Fehler beim Laden der Lieferanten: " + e.getMessage());
-        }
+        supplierComboBox.setDisable(true); // Disabled until data loaded
 
         grid.add(new Label("Lieferant:"), 0, 0);
         grid.add(supplierComboBox, 1, 0);
@@ -130,40 +91,7 @@ public class AssignmentDialog extends Dialog<Assignment> {
         supplierNumberComboBox = new ComboBox<>();
         supplierNumberComboBox.setPromptText("Lieferantennummer auswählen");
         supplierNumberComboBox.setPrefWidth(200);
-
-        // Load supplier numbers
-        try {
-            List<SupplierNumber> supplierNumbers = supplierNrService.getDatabaseEntries();
-            supplierNumberComboBox.getItems().addAll(supplierNumbers);
-
-            // Custom display
-            supplierNumberComboBox.setCellFactory(param -> new ListCell<>() {
-                @Override
-                protected void updateItem(SupplierNumber item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (empty || item == null) {
-                        setText(null);
-                    } else {
-                        setText("Nummer " + item.getId());
-                    }
-                }
-            });
-
-            supplierNumberComboBox.setButtonCell(new ListCell<>() {
-                @Override
-                protected void updateItem(SupplierNumber item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (empty || item == null) {
-                        setText(null);
-                    } else {
-                        setText("Nummer " + item.getId());
-                    }
-                }
-            });
-
-        } catch (Exception e) {
-            showError("Fehler beim Laden der Lieferantennummern: " + e.getMessage());
-        }
+        supplierNumberComboBox.setDisable(true); // Disabled until data loaded
 
         grid.add(new Label("Lieferantennummer:"), 0, 1);
         grid.add(supplierNumberComboBox, 1, 1);
@@ -171,7 +99,7 @@ public class AssignmentDialog extends Dialog<Assignment> {
         // Valid From DatePicker
         validFromDatePicker = new DatePicker();
         validFromDatePicker.setPromptText("Gültig ab");
-        validFromDatePicker.setValue(LocalDate.now()); // Default: today
+        validFromDatePicker.setValue(LocalDate.now());
         grid.add(new Label("Gültig ab:"), 0, 2);
         grid.add(validFromDatePicker, 1, 2);
 
@@ -182,9 +110,81 @@ public class AssignmentDialog extends Dialog<Assignment> {
         grid.add(validToDatePicker, 1, 3);
 
         getDialogPane().setContent(grid);
-
-        // Request focus on supplier combo
         supplierComboBox.requestFocus();
+    }
+
+    private void loadSuppliersAsync() {
+        AsyncDatabaseTask.run(
+                () -> supplierService.getDatabaseEntries(),
+                getDialogPane(),
+                suppliers -> {
+                    supplierComboBox.getItems().addAll(suppliers);
+
+                    supplierComboBox.setCellFactory(param -> new ListCell<>() {
+                        @Override
+                        protected void updateItem(Company item, boolean empty) {
+                            super.updateItem(item, empty);
+                            if (empty || item == null) {
+                                setText(null);
+                            } else {
+                                setText(item.getAddress().getName() + " (" + item.getAddress().getCity() + ")");
+                            }
+                        }
+                    });
+
+                    supplierComboBox.setButtonCell(new ListCell<>() {
+                        @Override
+                        protected void updateItem(Company item, boolean empty) {
+                            super.updateItem(item, empty);
+                            if (empty || item == null) {
+                                setText(null);
+                            } else {
+                                setText(item.getAddress().getName() + " (" + item.getAddress().getCity() + ")");
+                            }
+                        }
+                    });
+
+                    supplierComboBox.setDisable(false);
+                },
+                error -> showError("Fehler beim Laden der Lieferanten: " + error.getMessage())
+        );
+    }
+
+    private void loadSupplierNumbersAsync() {
+        AsyncDatabaseTask.run(
+                () -> supplierNrService.getDatabaseEntries(),
+                getDialogPane(),
+                supplierNumbers -> {
+                    supplierNumberComboBox.getItems().addAll(supplierNumbers);
+
+                    supplierNumberComboBox.setCellFactory(param -> new ListCell<>() {
+                        @Override
+                        protected void updateItem(SupplierNumber item, boolean empty) {
+                            super.updateItem(item, empty);
+                            if (empty || item == null) {
+                                setText(null);
+                            } else {
+                                setText("Nummer " + item.getId());
+                            }
+                        }
+                    });
+
+                    supplierNumberComboBox.setButtonCell(new ListCell<>() {
+                        @Override
+                        protected void updateItem(SupplierNumber item, boolean empty) {
+                            super.updateItem(item, empty);
+                            if (empty || item == null) {
+                                setText(null);
+                            } else {
+                                setText("Nummer " + item.getId());
+                            }
+                        }
+                    });
+
+                    supplierNumberComboBox.setDisable(false);
+                },
+                error -> showError("Fehler beim Laden der Lieferantennummern: " + error.getMessage())
+        );
     }
 
     private void setupValidation() {
@@ -192,7 +192,6 @@ public class AssignmentDialog extends Dialog<Assignment> {
                 getDialogPane().getButtonTypes().get(0)
         );
 
-        // Add listeners for validation
         supplierComboBox.valueProperty().addListener((obs, oldVal, newVal) ->
                 saveButton.setDisable(!isFormValid())
         );
@@ -206,7 +205,6 @@ public class AssignmentDialog extends Dialog<Assignment> {
                 saveButton.setDisable(!isFormValid())
         );
 
-        // Visual feedback for date validation
         validFromDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == null) {
                 validFromDatePicker.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
@@ -217,10 +215,8 @@ public class AssignmentDialog extends Dialog<Assignment> {
 
         validToDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == null) {
-                // Optional field - no border
                 validToDatePicker.setStyle("");
             } else {
-                // Check if after validFrom
                 LocalDate validFrom = validFromDatePicker.getValue();
                 if (validFrom != null && newVal.isAfter(validFrom)) {
                     validToDatePicker.setStyle("-fx-border-color: green; -fx-border-width: 2px;");
@@ -232,7 +228,6 @@ public class AssignmentDialog extends Dialog<Assignment> {
             }
         });
 
-        // Also update validTo border when validFrom changes
         validFromDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
             LocalDate validTo = validToDatePicker.getValue();
             if (validTo != null && newVal != null) {
@@ -244,30 +239,22 @@ public class AssignmentDialog extends Dialog<Assignment> {
             }
         });
 
-        // Add text field listener to catch invalid manual input
         addDatePickerValidation(validFromDatePicker);
         addDatePickerValidation(validToDatePicker);
     }
 
-    /**
-     * Adds validation to DatePicker to handle invalid manual input
-     */
     private void addDatePickerValidation(DatePicker datePicker) {
         datePicker.getEditor().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             if (!isNowFocused) {
-                // When focus is lost, validate input
                 try {
                     String text = datePicker.getEditor().getText();
                     if (text != null && !text.trim().isEmpty()) {
-                        // Try to parse the date
                         datePicker.setValue(datePicker.getConverter().fromString(text));
                     }
                 } catch (Exception e) {
-                    // Invalid input - reset to previous value or null
                     datePicker.setValue(null);
                     datePicker.getEditor().clear();
 
-                    // Show error
                     Alert alert = new Alert(Alert.AlertType.WARNING);
                     alert.setTitle("Ungültiges Datum");
                     alert.setHeaderText("Datum konnte nicht gelesen werden");
@@ -279,22 +266,18 @@ public class AssignmentDialog extends Dialog<Assignment> {
     }
 
     private boolean isFormValid() {
-        // Supplier must be selected
         if (supplierComboBox.getValue() == null) {
             return false;
         }
 
-        // Supplier number must be selected
         if (supplierNumberComboBox.getValue() == null) {
             return false;
         }
 
-        // Valid from must be set
         if (validFromDatePicker.getValue() == null) {
             return false;
         }
 
-        // Valid to is OPTIONAL - if set, must be after valid from
         if (validToDatePicker.getValue() != null) {
             if (!validToDatePicker.getValue().isAfter(validFromDatePicker.getValue())) {
                 return false;
@@ -304,30 +287,45 @@ public class AssignmentDialog extends Dialog<Assignment> {
         return true;
     }
 
+    private void populateFieldsWhenDataLoaded() {
+        if (existingAssignment != null) {
+            // Wait for data to be loaded, then populate
+            new Thread(() -> {
+                // Wait max 5 seconds for data
+                for (int i = 0; i < 50; i++) {
+                    if (!supplierComboBox.getItems().isEmpty() &&
+                            !supplierNumberComboBox.getItems().isEmpty()) {
+                        Platform.runLater(this::populateFields);
+                        break;
+                    }
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                }
+            }).start();
+        }
+    }
+
     private void populateFields() {
         if (existingAssignment != null) {
-            // Find and select supplier
-            UUID supplierId = existingAssignment.getSupplierId();
             supplierComboBox.getItems().stream()
-                    .filter(c -> c.getCompanyId().equals(supplierId))
+                    .filter(c -> c.getCompanyId().equals(existingAssignment.getSupplierId()))
                     .findFirst()
                     .ifPresent(supplierComboBox::setValue);
 
-            // Find and select supplier number
             int supplierNrId = existingAssignment.getSupplierNumber().getId();
             supplierNumberComboBox.getItems().stream()
                     .filter(sn -> sn.getId() == supplierNrId)
                     .findFirst()
                     .ifPresent(supplierNumberComboBox::setValue);
 
-            // Set dates
             validFromDatePicker.setValue(existingAssignment.getValidFrom());
 
-            // validTo is optional - can be null
             if (existingAssignment.getValidTo() != null) {
                 validToDatePicker.setValue(existingAssignment.getValidTo());
             }
-            // If null, DatePicker stays empty
         }
     }
 
@@ -337,10 +335,9 @@ public class AssignmentDialog extends Dialog<Assignment> {
                 Company selectedSupplier = supplierComboBox.getValue();
                 SupplierNumber selectedSupplierNumber = supplierNumberComboBox.getValue();
                 LocalDate validFrom = validFromDatePicker.getValue();
-                LocalDate validTo = validToDatePicker.getValue(); // Can be null!
+                LocalDate validTo = validToDatePicker.getValue();
 
                 if (isEditMode) {
-                    // Edit mode: preserve existing UUID
                     return new Assignment(
                             existingAssignment.getAssignmentId(),
                             selectedSupplier.getCompanyId(),
@@ -349,7 +346,6 @@ public class AssignmentDialog extends Dialog<Assignment> {
                             validTo
                     );
                 } else {
-                    // Add mode: no UUID (will be generated by DB)
                     return new Assignment(
                             selectedSupplier.getCompanyId(),
                             selectedSupplierNumber,
@@ -370,18 +366,12 @@ public class AssignmentDialog extends Dialog<Assignment> {
         alert.showAndWait();
     }
 
-    /**
-     * Static method to show Add dialog
-     */
     public static Optional<Assignment> showAddDialog(SupplierService supplierService,
                                                      SupplierNrService supplierNrService) {
         AssignmentDialog dialog = new AssignmentDialog(supplierService, supplierNrService);
         return dialog.showAndWait();
     }
 
-    /**
-     * Static method to show Edit dialog
-     */
     public static Optional<Assignment> showEditDialog(Assignment assignment,
                                                       SupplierService supplierService,
                                                       SupplierNrService supplierNrService) {

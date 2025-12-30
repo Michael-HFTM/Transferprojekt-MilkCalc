@@ -3,6 +3,7 @@ package com.example.transferprojekt.javafx.views;
 import com.example.transferprojekt.dataclasses.MilkDelivery;
 import com.example.transferprojekt.enumerations.TimeWindow;
 import com.example.transferprojekt.javafx.dialogs.MilkDeliveryDialog;
+import com.example.transferprojekt.javafx.utils.AsyncDatabaseTask;
 import com.example.transferprojekt.services.MilkDeliveryService;
 import com.example.transferprojekt.services.SupplierNrService;
 import javafx.collections.FXCollections;
@@ -35,25 +36,23 @@ public class MilkDeliveryView extends BorderPane {
 
     // Data
     private ObservableList<MilkDelivery> deliveryList;
+    private List<MilkDelivery> allDeliveries; // Cache for local filtering
 
     public MilkDeliveryView(MilkDeliveryService milkDeliveryService,
                             SupplierNrService supplierNrService) {
         this.milkDeliveryService = milkDeliveryService;
         this.supplierNrService = supplierNrService;
         this.deliveryList = FXCollections.observableArrayList();
+        this.allDeliveries = new java.util.ArrayList<>();
 
         initializeUI();
         loadDeliveries();
     }
 
     private void initializeUI() {
-        // Top: Toolbar with buttons
         HBox toolbar = createToolbar();
-
-        // Center: TableView
         tableView = createTableView();
 
-        // Layout
         VBox centerContent = new VBox(10);
         centerContent.setPadding(new Insets(10));
         centerContent.getChildren().addAll(toolbar, tableView);
@@ -66,13 +65,11 @@ public class MilkDeliveryView extends BorderPane {
         HBox toolbar = new HBox(10);
         toolbar.setPadding(new Insets(5));
 
-        // Search Field
         searchField = new TextField();
         searchField.setPromptText("Suche nach Lieferantennummer, Datum, Zeitfenster...");
         searchField.setPrefWidth(350);
         searchField.textProperty().addListener((obs, oldVal, newVal) -> filterDeliveries(newVal));
 
-        // Buttons
         addButton = new Button("Hinzufügen");
         addButton.setOnAction(e -> addDelivery());
 
@@ -87,7 +84,6 @@ public class MilkDeliveryView extends BorderPane {
         refreshButton = new Button("Aktualisieren");
         refreshButton.setOnAction(e -> loadDeliveries());
 
-        // Spacer
         HBox spacer = new HBox();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
@@ -107,12 +103,10 @@ public class MilkDeliveryView extends BorderPane {
         TableView<MilkDelivery> table = new TableView<>();
         table.setItems(deliveryList);
 
-        // Column: Delivery ID (hidden)
         TableColumn<MilkDelivery, UUID> idColumn = new TableColumn<>("Liefer-ID");
         idColumn.setCellValueFactory(new PropertyValueFactory<>("deliveryId"));
         idColumn.setVisible(false);
 
-        // Column: Supplier Number
         TableColumn<MilkDelivery, String> supplierNumberColumn = new TableColumn<>("Lieferantennummer");
         supplierNumberColumn.setCellValueFactory(cellData ->
                 new javafx.beans.property.SimpleStringProperty(
@@ -121,22 +115,18 @@ public class MilkDeliveryView extends BorderPane {
         );
         supplierNumberColumn.setPrefWidth(150);
 
-        // Column: Date
         TableColumn<MilkDelivery, LocalDate> dateColumn = new TableColumn<>("Datum");
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
         dateColumn.setPrefWidth(120);
 
-        // Column: Time Window
         TableColumn<MilkDelivery, TimeWindow> timeWindowColumn = new TableColumn<>("Zeitfenster");
         timeWindowColumn.setCellValueFactory(new PropertyValueFactory<>("timeWindow"));
         timeWindowColumn.setPrefWidth(100);
 
-        // Column: Amount (kg)
         TableColumn<MilkDelivery, BigDecimal> amountColumn = new TableColumn<>("Menge (kg)");
         amountColumn.setCellValueFactory(new PropertyValueFactory<>("amountKg"));
         amountColumn.setPrefWidth(120);
 
-        // Custom cell factory for amount (format with 2 decimal places)
         amountColumn.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(BigDecimal item, boolean empty) {
@@ -156,14 +146,12 @@ public class MilkDeliveryView extends BorderPane {
                 amountColumn
         );
 
-        // Enable/disable buttons based on selection
         table.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             boolean hasSelection = newSelection != null;
             editButton.setDisable(!hasSelection);
             deleteButton.setDisable(!hasSelection);
         });
 
-        // Double-click to edit
         table.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2 && table.getSelectionModel().getSelectedItem() != null) {
                 editDelivery();
@@ -174,83 +162,90 @@ public class MilkDeliveryView extends BorderPane {
     }
 
     /**
-     * Loads all deliveries from database
+     * Loads all deliveries from database (ASYNC)
      */
     private void loadDeliveries() {
-        try {
-            List<MilkDelivery> deliveries = milkDeliveryService.getDatabaseEntries();
-            deliveryList.clear();
-            deliveryList.addAll(deliveries);
+        setButtonsEnabled(false);
 
-            // Clear search field
-            searchField.clear();
-
-        } catch (Exception e) {
-            showErrorDialog("Fehler beim Laden", "Milchlieferungen konnten nicht geladen werden.", e.getMessage());
-        }
+        AsyncDatabaseTask.run(
+                () -> milkDeliveryService.getDatabaseEntries(),
+                this,
+                deliveries -> {
+                    allDeliveries = deliveries;
+                    deliveryList.clear();
+                    deliveryList.addAll(deliveries);
+                    searchField.clear();
+                    setButtonsEnabled(true);
+                },
+                error -> {
+                    showErrorDialog("Fehler beim Laden", "Milchlieferungen konnten nicht geladen werden.", error.getMessage());
+                    setButtonsEnabled(true);
+                }
+        );
     }
 
     /**
-     * Filters deliveries based on search text
+     * Filters deliveries based on search text (LOCAL)
      */
     private void filterDeliveries(String searchText) {
-        if (searchText == null || searchText.trim().isEmpty()) {
-            loadDeliveries();
+        if (allDeliveries == null) {
             return;
         }
 
-        try {
-            List<MilkDelivery> allDeliveries = milkDeliveryService.getDatabaseEntries();
-            String lowerCaseFilter = searchText.toLowerCase();
-
-            List<MilkDelivery> filtered = allDeliveries.stream()
-                    .filter(delivery -> {
-                        // Search in supplier number
-                        boolean matchesSupplierNumber = String.valueOf(delivery.getSupplierNumber().getId())
-                                .contains(lowerCaseFilter);
-
-                        // Search in date
-                        boolean matchesDate = delivery.getDate().toString().contains(lowerCaseFilter);
-
-                        // Search in time window
-                        boolean matchesTimeWindow = delivery.getTimeWindow().toString()
-                                .toLowerCase().contains(lowerCaseFilter);
-
-                        // Search in amount
-                        boolean matchesAmount = delivery.getAmountKg().toString().contains(lowerCaseFilter);
-
-                        return matchesSupplierNumber || matchesDate || matchesTimeWindow || matchesAmount;
-                    })
-                    .toList();
-
+        if (searchText == null || searchText.trim().isEmpty()) {
             deliveryList.clear();
-            deliveryList.addAll(filtered);
-
-        } catch (Exception e) {
-            showErrorDialog("Fehler bei der Suche", "Suche konnte nicht durchgeführt werden.", e.getMessage());
+            deliveryList.addAll(allDeliveries);
+            return;
         }
+
+        String lowerCaseFilter = searchText.toLowerCase();
+
+        List<MilkDelivery> filtered = allDeliveries.stream()
+                .filter(delivery -> {
+                    boolean matchesSupplierNumber = String.valueOf(delivery.getSupplierNumber().getId())
+                            .contains(lowerCaseFilter);
+
+                    boolean matchesDate = delivery.getDate().toString().contains(lowerCaseFilter);
+
+                    boolean matchesTimeWindow = delivery.getTimeWindow().toString()
+                            .toLowerCase().contains(lowerCaseFilter);
+
+                    boolean matchesAmount = delivery.getAmountKg().toString().contains(lowerCaseFilter);
+
+                    return matchesSupplierNumber || matchesDate || matchesTimeWindow || matchesAmount;
+                })
+                .toList();
+
+        deliveryList.clear();
+        deliveryList.addAll(filtered);
     }
 
     /**
-     * Opens dialog to add a new delivery
+     * Opens dialog to add a new delivery (ASYNC)
      */
     private void addDelivery() {
         MilkDeliveryDialog.showAddDialog(supplierNrService).ifPresent(newDelivery -> {
-            try {
-                milkDeliveryService.save(newDelivery);
-                showInfoDialog("Erfolg", "Milchlieferung wurde erfolgreich hinzugefügt.");
-                loadDeliveries();
+            setButtonsEnabled(false);
 
-            } catch (Exception e) {
-                showErrorDialog("Fehler beim Hinzufügen",
-                        "Milchlieferung konnte nicht gespeichert werden.",
-                        e.getMessage());
-            }
+            AsyncDatabaseTask.runVoid(
+                    () -> milkDeliveryService.save(newDelivery),
+                    this,
+                    () -> {
+                        showInfoDialog("Erfolg", "Milchlieferung wurde erfolgreich hinzugefügt.");
+                        loadDeliveries();
+                    },
+                    error -> {
+                        showErrorDialog("Fehler beim Hinzufügen",
+                                "Milchlieferung konnte nicht gespeichert werden.",
+                                error.getMessage());
+                        setButtonsEnabled(true);
+                    }
+            );
         });
     }
 
     /**
-     * Opens dialog to edit selected delivery
+     * Opens dialog to edit selected delivery (ASYNC)
      */
     private void editDelivery() {
         MilkDelivery selectedDelivery = tableView.getSelectionModel().getSelectedItem();
@@ -260,21 +255,27 @@ public class MilkDeliveryView extends BorderPane {
 
         MilkDeliveryDialog.showEditDialog(selectedDelivery, supplierNrService)
                 .ifPresent(updatedDelivery -> {
-                    try {
-                        milkDeliveryService.save(updatedDelivery);
-                        showInfoDialog("Erfolg", "Milchlieferung wurde erfolgreich aktualisiert.");
-                        loadDeliveries();
+                    setButtonsEnabled(false);
 
-                    } catch (Exception e) {
-                        showErrorDialog("Fehler beim Speichern",
-                                "Änderungen konnten nicht gespeichert werden.",
-                                e.getMessage());
-                    }
+                    AsyncDatabaseTask.runVoid(
+                            () -> milkDeliveryService.save(updatedDelivery),
+                            this,
+                            () -> {
+                                showInfoDialog("Erfolg", "Milchlieferung wurde erfolgreich aktualisiert.");
+                                loadDeliveries();
+                            },
+                            error -> {
+                                showErrorDialog("Fehler beim Speichern",
+                                        "Änderungen konnten nicht gespeichert werden.",
+                                        error.getMessage());
+                                setButtonsEnabled(true);
+                            }
+                    );
                 });
     }
 
     /**
-     * Deletes selected delivery after confirmation
+     * Deletes selected delivery after confirmation (ASYNC)
      */
     private void deleteDelivery() {
         MilkDelivery selectedDelivery = tableView.getSelectionModel().getSelectedItem();
@@ -282,7 +283,6 @@ public class MilkDeliveryView extends BorderPane {
             return;
         }
 
-        // Confirmation dialog
         Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
         confirmation.setTitle("Löschen bestätigen");
         confirmation.setHeaderText("Milchlieferung wirklich löschen?");
@@ -295,27 +295,44 @@ public class MilkDeliveryView extends BorderPane {
 
         confirmation.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                try {
-                    boolean success = milkDeliveryService.deleteById(selectedDelivery.getDeliveryId());
+                setButtonsEnabled(false);
 
-                    if (success) {
-                        showInfoDialog("Erfolg", "Milchlieferung wurde gelöscht.");
-                        loadDeliveries();
-                    } else {
-                        showErrorDialog("Fehler", "Milchlieferung konnte nicht gelöscht werden.",
-                                "Möglicherweise existieren noch Abhängigkeiten.");
-                    }
-
-                } catch (Exception e) {
-                    showErrorDialog("Fehler beim Löschen", "Ein Fehler ist aufgetreten.", e.getMessage());
-                }
+                AsyncDatabaseTask.run(
+                        () -> milkDeliveryService.deleteById(selectedDelivery.getDeliveryId()),
+                        this,
+                        success -> {
+                            if (success) {
+                                showInfoDialog("Erfolg", "Milchlieferung wurde gelöscht.");
+                                loadDeliveries();
+                            } else {
+                                showErrorDialog("Fehler", "Milchlieferung konnte nicht gelöscht werden.",
+                                        "Möglicherweise existieren noch Abhängigkeiten.");
+                                setButtonsEnabled(true);
+                            }
+                        },
+                        error -> {
+                            showErrorDialog("Fehler beim Löschen", "Ein Fehler ist aufgetreten.", error.getMessage());
+                            setButtonsEnabled(true);
+                        }
+                );
             }
         });
     }
 
-    /**
-     * Shows an error dialog
-     */
+    private void setButtonsEnabled(boolean enabled) {
+        addButton.setDisable(!enabled);
+        refreshButton.setDisable(!enabled);
+
+        if (enabled) {
+            boolean hasSelection = tableView.getSelectionModel().getSelectedItem() != null;
+            editButton.setDisable(!hasSelection);
+            deleteButton.setDisable(!hasSelection);
+        } else {
+            editButton.setDisable(true);
+            deleteButton.setDisable(true);
+        }
+    }
+
     private void showErrorDialog(String title, String header, String content) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -324,9 +341,6 @@ public class MilkDeliveryView extends BorderPane {
         alert.showAndWait();
     }
 
-    /**
-     * Shows an info dialog
-     */
     private void showInfoDialog(String header, String content) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Information");
