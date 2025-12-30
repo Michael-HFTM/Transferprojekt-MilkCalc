@@ -4,6 +4,7 @@ import com.example.transferprojekt.dataclasses.MilkDelivery;
 import com.example.transferprojekt.dataclasses.SupplierNumber;
 import com.example.transferprojekt.enumerations.TimeWindow;
 import com.example.transferprojekt.javafx.utils.AsyncDatabaseTask;
+import com.example.transferprojekt.javafx.utils.DialogUtils;
 import com.example.transferprojekt.services.SupplierNrService;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -163,7 +164,7 @@ public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
 
                     supplierNumberComboBox.setDisable(false);
                 },
-                error -> showError("Fehler beim Laden der Lieferantennummern: " + error.getMessage())
+                error -> DialogUtils.showError("Fehler beim Laden", "Lieferantennummern konnten nicht geladen werden.\n" + error.getMessage())
         );
     }
 
@@ -311,23 +312,12 @@ public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
                 } catch (Exception e) {
                     datePicker.setValue(null);
                     datePicker.getEditor().clear();
-
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setTitle("Ungültiges Datum");
-                    alert.setHeaderText("Datum konnte nicht gelesen werden");
-                    alert.setContentText("Bitte verwenden Sie das Format: TT.MM.JJJJ\nBeispiel: 01.12.2025");
-                    alert.showAndWait();
+                    DialogUtils.showWarning("Ungültiges Datum",
+                            "Datum konnte nicht gelesen werden",
+                            "Bitte verwenden Sie das Format: TT.MM.JJJJ\nBeispiel: 01.12.2025");
                 }
             }
         });
-    }
-
-    private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Fehler");
-        alert.setHeaderText("Ein Fehler ist aufgetreten");
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     public static Optional<MilkDelivery> showAddDialog(SupplierNrService supplierNrService) {

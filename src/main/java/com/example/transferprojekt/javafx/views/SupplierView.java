@@ -3,6 +3,7 @@ package com.example.transferprojekt.javafx.views;
 import com.example.transferprojekt.dataclasses.Company;
 import com.example.transferprojekt.javafx.dialogs.SupplierDialog;
 import com.example.transferprojekt.javafx.utils.AsyncDatabaseTask;
+import com.example.transferprojekt.javafx.utils.DialogUtils;
 import com.example.transferprojekt.services.SupplierService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -200,9 +201,8 @@ public class SupplierView extends BorderPane {
                 },
                 error -> {
                     // Error callback (on JavaFX thread)
-                    showErrorDialog("Fehler beim Laden",
-                            "Lieferanten konnten nicht geladen werden.",
-                            error.getMessage());
+                    DialogUtils.showError("Fehler beim Laden",
+                            "Lieferanten konnten nicht geladen werden.\n" + error.getMessage());
 
                     // Re-enable buttons even on error
                     setButtonsEnabled(true);
@@ -258,14 +258,13 @@ public class SupplierView extends BorderPane {
                     this,
                     () -> {
                         // Success callback
-                        showInfoDialog("Erfolg", "Lieferant wurde erfolgreich hinzugefügt.");
+                        DialogUtils.showInfo("Erfolg", "Lieferant wurde erfolgreich hinzugefügt.");
                         loadSuppliers(); // Reload table
                     },
                     error -> {
                         // Error callback
-                        showErrorDialog("Fehler beim Hinzufügen",
-                                "Lieferant konnte nicht gespeichert werden.",
-                                error.getMessage());
+                        DialogUtils.showError("Fehler beim Hinzufügen",
+                                "Lieferant konnte nicht gespeichert werden.\n" + error.getMessage());
                         setButtonsEnabled(true);
                     }
             );
@@ -292,14 +291,13 @@ public class SupplierView extends BorderPane {
                     this,
                     () -> {
                         // Success callback
-                        showInfoDialog("Erfolg", "Lieferant wurde erfolgreich aktualisiert.");
+                        DialogUtils.showInfo("Erfolg", "Lieferant wurde erfolgreich aktualisiert.");
                         loadSuppliers(); // Reload table
                     },
                     error -> {
                         // Error callback
-                        showErrorDialog("Fehler beim Speichern",
-                                "Änderungen konnten nicht gespeichert werden.",
-                                error.getMessage());
+                        DialogUtils.showError("Fehler beim Speichern",
+                                "Änderungen konnten nicht gespeichert werden.\n" + error.getMessage());
                         setButtonsEnabled(true);
                     }
             );
@@ -316,46 +314,38 @@ public class SupplierView extends BorderPane {
         }
 
         // Confirmation dialog
-        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmation.setTitle("Löschen bestätigen");
-        confirmation.setHeaderText("Lieferanten wirklich löschen?");
-        confirmation.setContentText(
-                "Name: " + selectedSupplier.getAddress().getName() + "\n" +
-                        "Ort: " + selectedSupplier.getAddress().getCity() + "\n\n" +
-                        "Diese Aktion kann nicht rückgängig gemacht werden!"
-        );
+        String itemDescription = "Name: " + selectedSupplier.getAddress().getName() + "\n" +
+                "Ort: " + selectedSupplier.getAddress().getCity();
 
-        confirmation.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                setButtonsEnabled(false);
+        if (DialogUtils.showDeleteConfirmation(itemDescription)) {
+            setButtonsEnabled(false);
 
-                AsyncDatabaseTask.run(
-                        () -> {
-                            // Database operation in background thread
-                            return supplierService.deleteById(selectedSupplier.getCompanyId());
-                        },
-                        this,
-                        success -> {
-                            // Success callback
-                            if (success) {
-                                showInfoDialog("Erfolg", "Lieferant wurde gelöscht.");
-                                loadSuppliers(); // Reload table
-                            } else {
-                                showErrorDialog("Fehler", "Lieferant konnte nicht gelöscht werden.",
-                                        "Möglicherweise existieren noch Zuweisungen für diesen Lieferanten.");
-                                setButtonsEnabled(true);
-                            }
-                        },
-                        error -> {
-                            // Error callback
-                            showErrorDialog("Fehler beim Löschen",
-                                    "Ein Fehler ist aufgetreten.",
-                                    error.getMessage());
+            AsyncDatabaseTask.run(
+                    () -> {
+                        // Database operation in background thread
+                        return supplierService.deleteById(selectedSupplier.getCompanyId());
+                    },
+                    this,
+                    success -> {
+                        // Success callback
+                        if (success) {
+                            DialogUtils.showInfo("Erfolg", "Lieferant wurde gelöscht.");
+                            loadSuppliers(); // Reload table
+                        } else {
+                            DialogUtils.showError("Fehler",
+                                    "Lieferant konnte nicht gelöscht werden.\n" +
+                                            "Möglicherweise existieren noch Zuweisungen für diesen Lieferanten.");
                             setButtonsEnabled(true);
                         }
-                );
-            }
-        });
+                    },
+                    error -> {
+                        // Error callback
+                        DialogUtils.showError("Fehler beim Löschen",
+                                "Ein Fehler ist aufgetreten.\n" + error.getMessage());
+                        setButtonsEnabled(true);
+                    }
+            );
+        }
     }
 
     /**
@@ -374,27 +364,5 @@ public class SupplierView extends BorderPane {
             editButton.setDisable(true);
             deleteButton.setDisable(true);
         }
-    }
-
-    /**
-     * Shows an error dialog
-     */
-    private void showErrorDialog(String title, String header, String content) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
-    }
-
-    /**
-     * Shows an info dialog
-     */
-    private void showInfoDialog(String header, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Information");
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
     }
 }

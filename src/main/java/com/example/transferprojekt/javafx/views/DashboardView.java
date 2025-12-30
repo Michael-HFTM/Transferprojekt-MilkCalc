@@ -4,6 +4,7 @@ import com.example.transferprojekt.dataclasses.Assignment;
 import com.example.transferprojekt.dataclasses.Company;
 import com.example.transferprojekt.dataclasses.MilkDelivery;
 import com.example.transferprojekt.javafx.utils.AsyncDatabaseTask;
+import com.example.transferprojekt.javafx.utils.DialogUtils;
 import com.example.transferprojekt.services.AssignmentService;
 import com.example.transferprojekt.services.MilkDeliveryService;
 import com.example.transferprojekt.services.SupplierService;
@@ -120,7 +121,7 @@ public class DashboardView extends BorderPane {
 
                     supplierFilter.setValue(null);
                 },
-                error -> showError("Fehler beim Laden der Lieferanten: " + error.getMessage())
+                error -> DialogUtils.showError("Fehler beim Laden", "Lieferanten konnten nicht geladen werden.\n" + error.getMessage())
         );
 
         supplierBox.getChildren().addAll(supplierLabel, supplierFilter);
@@ -311,7 +312,7 @@ public class DashboardView extends BorderPane {
                     calculateStatistics(); // Calculate with loaded data
                 },
                 error -> {
-                    showError("Fehler beim Laden der Daten: " + error.getMessage());
+                    DialogUtils.showError("Fehler beim Laden", "Daten konnten nicht geladen werden.\n" + error.getMessage());
                     calculateButton.setDisable(false);
                 }
         );
@@ -391,13 +392,5 @@ public class DashboardView extends BorderPane {
         countLabel.setText(String.valueOf(count));
         totalLabel.setText(String.format("%.2f kg", totalAmount.doubleValue()));
         averageLabel.setText(String.format("%.2f kg", averageAmount.doubleValue()));
-    }
-
-    private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Fehler");
-        alert.setHeaderText("Ein Fehler ist aufgetreten");
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }

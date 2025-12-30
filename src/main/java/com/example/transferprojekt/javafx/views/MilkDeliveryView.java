@@ -4,6 +4,7 @@ import com.example.transferprojekt.dataclasses.MilkDelivery;
 import com.example.transferprojekt.enumerations.TimeWindow;
 import com.example.transferprojekt.javafx.dialogs.MilkDeliveryDialog;
 import com.example.transferprojekt.javafx.utils.AsyncDatabaseTask;
+import com.example.transferprojekt.javafx.utils.DialogUtils;
 import com.example.transferprojekt.services.MilkDeliveryService;
 import com.example.transferprojekt.services.SupplierNrService;
 import javafx.collections.FXCollections;
@@ -178,7 +179,7 @@ public class MilkDeliveryView extends BorderPane {
                     setButtonsEnabled(true);
                 },
                 error -> {
-                    showErrorDialog("Fehler beim Laden", "Milchlieferungen konnten nicht geladen werden.", error.getMessage());
+                    DialogUtils.showError("Fehler beim Laden", "Milchlieferungen konnten nicht geladen werden.\n" + error.getMessage());
                     setButtonsEnabled(true);
                 }
         );
@@ -231,13 +232,12 @@ public class MilkDeliveryView extends BorderPane {
                     () -> milkDeliveryService.save(newDelivery),
                     this,
                     () -> {
-                        showInfoDialog("Erfolg", "Milchlieferung wurde erfolgreich hinzugefügt.");
+                        DialogUtils.showInfo("Erfolg", "Milchlieferung wurde erfolgreich hinzugefügt.");
                         loadDeliveries();
                     },
                     error -> {
-                        showErrorDialog("Fehler beim Hinzufügen",
-                                "Milchlieferung konnte nicht gespeichert werden.",
-                                error.getMessage());
+                        DialogUtils.showError("Fehler beim Hinzufügen",
+                                "Milchlieferung konnte nicht gespeichert werden.\n" + error.getMessage());
                         setButtonsEnabled(true);
                     }
             );
@@ -261,13 +261,12 @@ public class MilkDeliveryView extends BorderPane {
                             () -> milkDeliveryService.save(updatedDelivery),
                             this,
                             () -> {
-                                showInfoDialog("Erfolg", "Milchlieferung wurde erfolgreich aktualisiert.");
+                                DialogUtils.showInfo("Erfolg", "Milchlieferung wurde erfolgreich aktualisiert.");
                                 loadDeliveries();
                             },
                             error -> {
-                                showErrorDialog("Fehler beim Speichern",
-                                        "Änderungen konnten nicht gespeichert werden.",
-                                        error.getMessage());
+                                DialogUtils.showError("Fehler beim Speichern",
+                                        "Änderungen konnten nicht gespeichert werden.\n" + error.getMessage());
                                 setButtonsEnabled(true);
                             }
                     );
@@ -283,40 +282,32 @@ public class MilkDeliveryView extends BorderPane {
             return;
         }
 
-        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmation.setTitle("Löschen bestätigen");
-        confirmation.setHeaderText("Milchlieferung wirklich löschen?");
-        confirmation.setContentText(
-                "Lieferantennummer: " + selectedDelivery.getSupplierNumber().getId() + "\n" +
-                        "Datum: " + selectedDelivery.getDate() + "\n" +
-                        "Menge: " + selectedDelivery.getAmountKg() + " kg\n\n" +
-                        "Diese Aktion kann nicht rückgängig gemacht werden!"
-        );
+        String itemDescription = "Lieferantennummer: " + selectedDelivery.getSupplierNumber().getId() + "\n" +
+                "Datum: " + selectedDelivery.getDate() + "\n" +
+                "Menge: " + selectedDelivery.getAmountKg() + " kg";
 
-        confirmation.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                setButtonsEnabled(false);
+        if (DialogUtils.showDeleteConfirmation(itemDescription)) {
+            setButtonsEnabled(false);
 
-                AsyncDatabaseTask.run(
-                        () -> milkDeliveryService.deleteById(selectedDelivery.getDeliveryId()),
-                        this,
-                        success -> {
-                            if (success) {
-                                showInfoDialog("Erfolg", "Milchlieferung wurde gelöscht.");
-                                loadDeliveries();
-                            } else {
-                                showErrorDialog("Fehler", "Milchlieferung konnte nicht gelöscht werden.",
-                                        "Möglicherweise existieren noch Abhängigkeiten.");
-                                setButtonsEnabled(true);
-                            }
-                        },
-                        error -> {
-                            showErrorDialog("Fehler beim Löschen", "Ein Fehler ist aufgetreten.", error.getMessage());
+            AsyncDatabaseTask.run(
+                    () -> milkDeliveryService.deleteById(selectedDelivery.getDeliveryId()),
+                    this,
+                    success -> {
+                        if (success) {
+                            DialogUtils.showInfo("Erfolg", "Milchlieferung wurde gelöscht.");
+                            loadDeliveries();
+                        } else {
+                            DialogUtils.showError("Fehler", "Milchlieferung konnte nicht gelöscht werden.\n" +
+                                    "Möglicherweise existieren noch Abhängigkeiten.");
                             setButtonsEnabled(true);
                         }
-                );
-            }
-        });
+                    },
+                    error -> {
+                        DialogUtils.showError("Fehler beim Löschen", "Ein Fehler ist aufgetreten.\n" + error.getMessage());
+                        setButtonsEnabled(true);
+                    }
+            );
+        }
     }
 
     private void setButtonsEnabled(boolean enabled) {
@@ -331,21 +322,5 @@ public class MilkDeliveryView extends BorderPane {
             editButton.setDisable(true);
             deleteButton.setDisable(true);
         }
-    }
-
-    private void showErrorDialog(String title, String header, String content) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
-    }
-
-    private void showInfoDialog(String header, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Information");
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
     }
 }
