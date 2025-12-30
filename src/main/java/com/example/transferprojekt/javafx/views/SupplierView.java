@@ -181,11 +181,9 @@ public class SupplierView extends BorderPane {
         // Disable buttons during loading
         setButtonsEnabled(false);
 
+        // Database operation in background thread
         AsyncDatabaseTask.run(
-                () -> {
-                    // Database operation in background thread
-                    return supplierService.getDatabaseEntries();
-                },
+                supplierService::getDatabaseEntries,
                 this,  // StackPane for loading overlay
                 suppliers -> {
                     // Success callback (on JavaFX thread)

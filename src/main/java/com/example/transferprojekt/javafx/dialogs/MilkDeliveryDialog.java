@@ -13,7 +13,6 @@ import javafx.scene.layout.GridPane;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
@@ -133,7 +132,7 @@ public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
 
     private void loadSupplierNumbersAsync() {
         AsyncDatabaseTask.run(
-                () -> supplierNrService.getDatabaseEntries(),
+                supplierNrService::getDatabaseEntries,
                 getDialogPane(),
                 supplierNumbers -> {
                     supplierNumberComboBox.getItems().addAll(supplierNumbers);
@@ -170,7 +169,7 @@ public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
 
     private void setupValidation() {
         Button saveButton = (Button) getDialogPane().lookupButton(
-                getDialogPane().getButtonTypes().get(0)
+                getDialogPane().getButtonTypes().getFirst()
         );
 
         supplierNumberComboBox.valueProperty().addListener((obs, oldVal, newVal) ->

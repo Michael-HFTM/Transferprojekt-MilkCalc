@@ -73,33 +73,6 @@ public class AsyncDatabaseTask<T> extends Task<T> {
     }
 
     /**
-     * Simplified version without loading overlay
-     *
-     * @param onSuccess Callback when operation succeeds
-     * @param onError Callback when operation fails
-     */
-    public void execute(Consumer<T> onSuccess, Consumer<Throwable> onError) {
-        setOnSucceeded(event -> {
-            if (onSuccess != null) {
-                @SuppressWarnings("unchecked")
-                T result = (T) event.getSource().getValue();
-                onSuccess.accept(result);
-            }
-        });
-
-        setOnFailed(event -> {
-            Throwable exception = event.getSource().getException();
-            if (onError != null) {
-                onError.accept(exception);
-            }
-        });
-
-        Thread thread = new Thread(this);
-        thread.setDaemon(true);
-        thread.start();
-    }
-
-    /**
      * Static helper method to create and execute a task in one call
      *
      * @param operation The database operation

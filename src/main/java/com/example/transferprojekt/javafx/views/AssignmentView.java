@@ -194,7 +194,7 @@ public class AssignmentView extends BorderPane {
         setButtonsEnabled(false);
 
         AsyncDatabaseTask.run(
-                () -> assignmentService.getDatabaseEntries(),
+                assignmentService::getDatabaseEntries,
                 this,
                 assignments -> {
                     allAssignments = assignments;
@@ -241,7 +241,7 @@ public class AssignmentView extends BorderPane {
                         // Ignore lookup errors
                     }
 
-                    boolean matchesStatus = false;
+                    boolean matchesStatus;
                     LocalDate validFrom = assignment.getValidFrom();
                     LocalDate validTo = assignment.getValidTo();
                     LocalDate now = LocalDate.now();

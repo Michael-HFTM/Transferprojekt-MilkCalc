@@ -169,7 +169,7 @@ public class MilkDeliveryView extends BorderPane {
         setButtonsEnabled(false);
 
         AsyncDatabaseTask.run(
-                () -> milkDeliveryService.getDatabaseEntries(),
+                milkDeliveryService::getDatabaseEntries,
                 this,
                 deliveries -> {
                     allDeliveries = deliveries;

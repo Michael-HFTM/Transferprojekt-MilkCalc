@@ -13,7 +13,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 public class AssignmentDialog extends Dialog<Assignment> {
@@ -116,7 +115,7 @@ public class AssignmentDialog extends Dialog<Assignment> {
 
     private void loadSuppliersAsync() {
         AsyncDatabaseTask.run(
-                () -> supplierService.getDatabaseEntries(),
+                supplierService::getDatabaseEntries,
                 getDialogPane(),
                 suppliers -> {
                     supplierComboBox.getItems().addAll(suppliers);
@@ -153,7 +152,7 @@ public class AssignmentDialog extends Dialog<Assignment> {
 
     private void loadSupplierNumbersAsync() {
         AsyncDatabaseTask.run(
-                () -> supplierNrService.getDatabaseEntries(),
+                supplierNrService::getDatabaseEntries,
                 getDialogPane(),
                 supplierNumbers -> {
                     supplierNumberComboBox.getItems().addAll(supplierNumbers);
@@ -190,7 +189,7 @@ public class AssignmentDialog extends Dialog<Assignment> {
 
     private void setupValidation() {
         Button saveButton = (Button) getDialogPane().lookupButton(
-                getDialogPane().getButtonTypes().get(0)
+                getDialogPane().getButtonTypes().getFirst()
         );
 
         supplierComboBox.valueProperty().addListener((obs, oldVal, newVal) ->
@@ -277,9 +276,7 @@ public class AssignmentDialog extends Dialog<Assignment> {
         }
 
         if (validToDatePicker.getValue() != null) {
-            if (!validToDatePicker.getValue().isAfter(validFromDatePicker.getValue())) {
-                return false;
-            }
+            return validToDatePicker.getValue().isAfter(validFromDatePicker.getValue());
         }
 
         return true;
