@@ -97,7 +97,7 @@ public class DashboardView extends BorderPane {
 
         // Load suppliers async
         AsyncDatabaseTask.run(
-                () -> supplierService.getDatabaseEntries(),
+                supplierService::getDatabaseEntries,
                 this,
                 suppliers -> {
                     supplierFilter.getItems().add(null); // "Alle" option
@@ -354,7 +354,7 @@ public class DashboardView extends BorderPane {
             List<Integer> supplierNumbersForSupplier = allAssignments.stream()
                     .filter(a -> a.getSupplierId().equals(selectedSupplier.getCompanyId()))
                     .map(a -> a.getSupplierNumber().getId())
-                    .collect(Collectors.toList());
+                    .toList();
 
             // Filter deliveries by supplier numbers and period - LOCAL
             List<MilkDelivery> selectedFilteredDeliveries = allDeliveries.stream()

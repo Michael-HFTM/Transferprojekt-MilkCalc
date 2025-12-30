@@ -199,12 +199,4 @@ public class MainView extends BorderPane {
                         "Technologien: JavaFX + Spring Boot + PostgreSQL\n\n" +
                         "© 2025");
     }
-
-    public Tab getTab(int index) {
-        return tabPane.getTabs().get(index);
-    }
-
-    public void setTabContent(int index, javafx.scene.Node content) {
-        tabPane.getTabs().get(index).setContent(content);
-    }
 }

@@ -7,7 +7,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 
 import java.util.Optional;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class SupplierDialog extends Dialog<Company> {
@@ -118,7 +117,7 @@ public class SupplierDialog extends Dialog<Company> {
 
     private void setupValidation() {
         Button saveButton = (Button) getDialogPane().lookupButton(
-                getDialogPane().getButtonTypes().get(0)
+                getDialogPane().getButtonTypes().getFirst()
         );
 
         // Add listeners to all fields for real-time validation
@@ -222,17 +221,6 @@ public class SupplierDialog extends Dialog<Company> {
             }
             return null;
         });
-    }
-
-    /**
-     * Shows validation error dialog
-     */
-    private void showValidationError(String message) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Validierungsfehler");
-        alert.setHeaderText("Ungültige Eingabe");
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     /**
