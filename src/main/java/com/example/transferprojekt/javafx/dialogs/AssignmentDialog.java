@@ -4,6 +4,7 @@ import com.example.transferprojekt.dataclasses.Assignment;
 import com.example.transferprojekt.dataclasses.Company;
 import com.example.transferprojekt.dataclasses.SupplierNumber;
 import com.example.transferprojekt.javafx.utils.AsyncDatabaseTask;
+import com.example.transferprojekt.javafx.utils.DialogUtils;
 import com.example.transferprojekt.services.SupplierService;
 import com.example.transferprojekt.services.SupplierNrService;
 import javafx.application.Platform;
@@ -146,7 +147,7 @@ public class AssignmentDialog extends Dialog<Assignment> {
 
                     supplierComboBox.setDisable(false);
                 },
-                error -> showError("Fehler beim Laden der Lieferanten: " + error.getMessage())
+                error -> DialogUtils.showError("Fehler beim Laden", "Lieferanten konnten nicht geladen werden.\n" + error.getMessage())
         );
     }
 
@@ -183,7 +184,7 @@ public class AssignmentDialog extends Dialog<Assignment> {
 
                     supplierNumberComboBox.setDisable(false);
                 },
-                error -> showError("Fehler beim Laden der Lieferantennummern: " + error.getMessage())
+                error -> DialogUtils.showError("Fehler beim Laden", "Lieferantennummern konnten nicht geladen werden.\n" + error.getMessage())
         );
     }
 
@@ -254,12 +255,9 @@ public class AssignmentDialog extends Dialog<Assignment> {
                 } catch (Exception e) {
                     datePicker.setValue(null);
                     datePicker.getEditor().clear();
-
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setTitle("Ungültiges Datum");
-                    alert.setHeaderText("Datum konnte nicht gelesen werden");
-                    alert.setContentText("Bitte verwenden Sie das Format: TT.MM.JJJJ\nBeispiel: 01.12.2025");
-                    alert.showAndWait();
+                    DialogUtils.showWarning("Ungültiges Datum",
+                            "Datum konnte nicht gelesen werden",
+                            "Bitte verwenden Sie das Format: TT.MM.JJJJ\nBeispiel: 01.12.2025");
                 }
             }
         });
@@ -356,14 +354,6 @@ public class AssignmentDialog extends Dialog<Assignment> {
             }
             return null;
         });
-    }
-
-    private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Fehler");
-        alert.setHeaderText("Ein Fehler ist aufgetreten");
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     public static Optional<Assignment> showAddDialog(SupplierService supplierService,

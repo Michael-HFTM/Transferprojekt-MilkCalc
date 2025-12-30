@@ -1,6 +1,7 @@
 package com.example.transferprojekt.javafx.views;
 
 import com.example.transferprojekt.javafx.utils.AsyncDatabaseTask;
+import com.example.transferprojekt.javafx.utils.DialogUtils;
 import com.example.transferprojekt.services.AdminToolsService;
 import com.example.transferprojekt.services.AssignmentService;
 import com.example.transferprojekt.services.MilkDeliveryService;
@@ -123,120 +124,80 @@ public class MainView extends BorderPane {
             tabPane.getSelectionModel().select(dashboardTab);
 
         } catch (Exception e) {
-            showError("Fehler beim Aktualisieren", "Die Views konnten nicht aktualisiert werden.", e.getMessage());
+            DialogUtils.showError("Fehler beim Aktualisieren", "Die Views konnten nicht aktualisiert werden.\n" + e.getMessage());
         }
     }
 
     private void insertTestData() {
-        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmation.setTitle("Testdaten einfügen");
-        confirmation.setHeaderText("Testdaten einfügen?");
-        confirmation.setContentText(
-                "Dies wird alle vorhandenen Daten löschen und Testdaten einfügen.\n\n" +
-                        "Eingefügte Daten:\n" +
-                        "- 3 Lieferanten (Hof Müller, Biofarm Huber, Alpenmilch AG)\n" +
-                        "- 3 Zuweisungen\n" +
-                        "- 4 Milchlieferungen"
-        );
+        String message = "Dies wird alle vorhandenen Daten löschen und Testdaten einfügen.\n\n" +
+                "Eingefügte Daten:\n" +
+                "- 3 Lieferanten (Hof Müller, Biofarm Huber, Alpenmilch AG)\n" +
+                "- 3 Zuweisungen\n" +
+                "- 4 Milchlieferungen";
 
-        confirmation.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                AsyncDatabaseTask.runVoid(
-                        () -> {
-                            adminToolsService.flushAllDataTables("DELETE");
-                            testdataService.insertTestdata();
-                        },
-                        this,
-                        () -> {
-                            refreshAllViews();
+        if (DialogUtils.showConfirmation("Testdaten einfügen", "Testdaten einfügen?", message)) {
+            AsyncDatabaseTask.runVoid(
+                    () -> {
+                        adminToolsService.flushAllDataTables("DELETE");
+                        testdataService.insertTestdata();
+                    },
+                    this,
+                    () -> {
+                        refreshAllViews();
 
-                            Alert success = new Alert(Alert.AlertType.INFORMATION);
-                            success.setTitle("Erfolg");
-                            success.setHeaderText("Testdaten erfolgreich eingefügt");
-                            success.setContentText(
-                                    "3 Lieferanten, 3 Zuweisungen und 4 Milchlieferungen wurden erstellt.\n\n" +
-                                            "Sie befinden sich jetzt im Dashboard mit den aktualisierten Statistiken."
-                            );
-                            success.showAndWait();
-                        },
-                        error -> {
-                            showError("Fehler", "Testdaten konnten nicht eingefügt werden", error.getMessage());
-                            error.printStackTrace();
-                        }
-                );
-            }
-        });
+                        DialogUtils.showInfo("Erfolg", "Testdaten erfolgreich eingefügt",
+                                "3 Lieferanten, 3 Zuweisungen und 4 Milchlieferungen wurden erstellt.\n\n" +
+                                        "Sie befinden sich jetzt im Dashboard mit den aktualisierten Statistiken.");
+                    },
+                    error -> {
+                        DialogUtils.showError("Fehler", "Testdaten konnten nicht eingefügt werden.\n" + error.getMessage());
+                        error.printStackTrace();
+                    }
+            );
+        }
     }
 
     private void clearAllData() {
-        Alert confirmation = new Alert(Alert.AlertType.WARNING);
-        confirmation.setTitle("Alle Daten löschen");
-        confirmation.setHeaderText("WARNUNG: Alle Daten löschen?");
-        confirmation.setContentText(
-                "Diese Aktion kann nicht rückgängig gemacht werden!\n\n" +
-                        "Folgende Daten werden gelöscht:\n" +
-                        "- Alle Lieferanten\n" +
-                        "- Alle Zuweisungen\n" +
-                        "- Alle Milchlieferungen"
-        );
+        String message = "Diese Aktion kann nicht rückgängig gemacht werden!\n\n" +
+                "Folgende Daten werden gelöscht:\n" +
+                "- Alle Lieferanten\n" +
+                "- Alle Zuweisungen\n" +
+                "- Alle Milchlieferungen";
 
-        confirmation.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                TextInputDialog dialog = new TextInputDialog();
-                dialog.setTitle("Bestätigung");
-                dialog.setHeaderText("Geben Sie 'DELETE' ein, um zu bestätigen:");
-                dialog.setContentText("Bestätigung:");
+        if (DialogUtils.showConfirmation("Alle Daten löschen", "WARNUNG: Alle Daten löschen?", message)) {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Bestätigung");
+            dialog.setHeaderText("Geben Sie 'DELETE' ein, um zu bestätigen:");
+            dialog.setContentText("Bestätigung:");
 
-                dialog.showAndWait().ifPresent(input -> {
-                    if ("DELETE".equals(input)) {
-                        AsyncDatabaseTask.runVoid(
-                                () -> adminToolsService.flushAllDataTables("DELETE"),
-                                this,
-                                () -> {
-                                    refreshAllViews();
-
-                                    Alert success = new Alert(Alert.AlertType.INFORMATION);
-                                    success.setTitle("Erfolg");
-                                    success.setHeaderText("Daten erfolgreich gelöscht");
-                                    success.setContentText("Alle Daten wurden erfolgreich aus der Datenbank entfernt!");
-                                    success.showAndWait();
-                                },
-                                error -> {
-                                    showError("Fehler", "Daten konnten nicht gelöscht werden", error.getMessage());
-                                    error.printStackTrace();
-                                }
-                        );
-                    } else {
-                        Alert error = new Alert(Alert.AlertType.ERROR);
-                        error.setTitle("Abgebrochen");
-                        error.setHeaderText("Falsche Eingabe");
-                        error.setContentText("Die Aktion wurde abgebrochen.");
-                        error.showAndWait();
-                    }
-                });
-            }
-        });
+            dialog.showAndWait().ifPresent(input -> {
+                if ("DELETE".equals(input)) {
+                    AsyncDatabaseTask.runVoid(
+                            () -> adminToolsService.flushAllDataTables("DELETE"),
+                            this,
+                            () -> {
+                                refreshAllViews();
+                                DialogUtils.showInfo("Erfolg", "Daten erfolgreich gelöscht",
+                                        "Alle Daten wurden erfolgreich aus der Datenbank entfernt!");
+                            },
+                            error -> {
+                                DialogUtils.showError("Fehler", "Daten konnten nicht gelöscht werden.\n" + error.getMessage());
+                                error.printStackTrace();
+                            }
+                    );
+                } else {
+                    DialogUtils.showError("Abgebrochen", "Falsche Eingabe\nDie Aktion wurde abgebrochen.");
+                }
+            });
+        }
     }
 
     private void showAboutDialog() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Über MilkCalc");
-        alert.setHeaderText("MilkCalc - Milchlieferungs-Verwaltung");
-        alert.setContentText(
+        DialogUtils.showInfo("Über MilkCalc", "MilkCalc - Milchlieferungs-Verwaltung",
                 "Version: 0.0.1-SNAPSHOT\n" +
                         "Entwickelt als Praxisarbeit\n" +
                         "Technologien: JavaFX + Spring Boot + PostgreSQL\n\n" +
-                        "© 2025"
-        );
-        alert.showAndWait();
-    }
-
-    private void showError(String title, String header, String content) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
+                        "© 2025");
     }
 
     public Tab getTab(int index) {

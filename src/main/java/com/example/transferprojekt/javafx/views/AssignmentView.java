@@ -3,6 +3,7 @@ package com.example.transferprojekt.javafx.views;
 import com.example.transferprojekt.dataclasses.Assignment;
 import com.example.transferprojekt.javafx.dialogs.AssignmentDialog;
 import com.example.transferprojekt.javafx.utils.AsyncDatabaseTask;
+import com.example.transferprojekt.javafx.utils.DialogUtils;
 import com.example.transferprojekt.services.AssignmentService;
 import com.example.transferprojekt.services.SupplierService;
 import com.example.transferprojekt.services.SupplierNrService;
@@ -203,7 +204,7 @@ public class AssignmentView extends BorderPane {
                     setButtonsEnabled(true);
                 },
                 error -> {
-                    showErrorDialog("Fehler beim Laden", "Zuweisungen konnten nicht geladen werden.", error.getMessage());
+                    DialogUtils.showError("Fehler beim Laden", "Zuweisungen konnten nicht geladen werden.\n" + error.getMessage());
                     setButtonsEnabled(true);
                 }
         );
@@ -274,13 +275,12 @@ public class AssignmentView extends BorderPane {
                     () -> assignmentService.save(newAssignment),
                     this,
                     () -> {
-                        showInfoDialog("Erfolg", "Zuweisung wurde erfolgreich hinzugefügt.");
+                        DialogUtils.showInfo("Erfolg", "Zuweisung wurde erfolgreich hinzugefügt.");
                         loadAssignments();
                     },
                     error -> {
-                        showErrorDialog("Fehler beim Hinzufügen",
-                                "Zuweisung konnte nicht gespeichert werden.",
-                                error.getMessage());
+                        DialogUtils.showError("Fehler beim Hinzufügen",
+                                "Zuweisung konnte nicht gespeichert werden.\n" + error.getMessage());
                         setButtonsEnabled(true);
                     }
             );
@@ -304,13 +304,12 @@ public class AssignmentView extends BorderPane {
                             () -> assignmentService.save(updatedAssignment),
                             this,
                             () -> {
-                                showInfoDialog("Erfolg", "Zuweisung wurde erfolgreich aktualisiert.");
+                                DialogUtils.showInfo("Erfolg", "Zuweisung wurde erfolgreich aktualisiert.");
                                 loadAssignments();
                             },
                             error -> {
-                                showErrorDialog("Fehler beim Speichern",
-                                        "Änderungen konnten nicht gespeichert werden.",
-                                        error.getMessage());
+                                DialogUtils.showError("Fehler beim Speichern",
+                                        "Änderungen konnten nicht gespeichert werden.\n" + error.getMessage());
                                 setButtonsEnabled(true);
                             }
                     );
@@ -336,40 +335,32 @@ public class AssignmentView extends BorderPane {
             // Use "Unbekannt" as fallback
         }
 
-        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmation.setTitle("Löschen bestätigen");
-        confirmation.setHeaderText("Zuweisung wirklich löschen?");
-        confirmation.setContentText(
-                "Lieferant: " + supplierName + "\n" +
-                        "Lieferantennummer: " + selectedAssignment.getSupplierNumber().getId() + "\n" +
-                        "Gültig ab: " + selectedAssignment.getValidFrom() + "\n\n" +
-                        "Diese Aktion kann nicht rückgängig gemacht werden!"
-        );
+        String itemDescription = "Lieferant: " + supplierName + "\n" +
+                "Lieferantennummer: " + selectedAssignment.getSupplierNumber().getId() + "\n" +
+                "Gültig ab: " + selectedAssignment.getValidFrom();
 
-        confirmation.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                setButtonsEnabled(false);
+        if (DialogUtils.showDeleteConfirmation(itemDescription)) {
+            setButtonsEnabled(false);
 
-                AsyncDatabaseTask.run(
-                        () -> assignmentService.deleteById(selectedAssignment.getAssignmentId()),
-                        this,
-                        success -> {
-                            if (success) {
-                                showInfoDialog("Erfolg", "Zuweisung wurde gelöscht.");
-                                loadAssignments();
-                            } else {
-                                showErrorDialog("Fehler", "Zuweisung konnte nicht gelöscht werden.",
-                                        "Möglicherweise existieren noch Abhängigkeiten.");
-                                setButtonsEnabled(true);
-                            }
-                        },
-                        error -> {
-                            showErrorDialog("Fehler beim Löschen", "Ein Fehler ist aufgetreten.", error.getMessage());
+            AsyncDatabaseTask.run(
+                    () -> assignmentService.deleteById(selectedAssignment.getAssignmentId()),
+                    this,
+                    success -> {
+                        if (success) {
+                            DialogUtils.showInfo("Erfolg", "Zuweisung wurde gelöscht.");
+                            loadAssignments();
+                        } else {
+                            DialogUtils.showError("Fehler", "Zuweisung konnte nicht gelöscht werden.\n" +
+                                    "Möglicherweise existieren noch Abhängigkeiten.");
                             setButtonsEnabled(true);
                         }
-                );
-            }
-        });
+                    },
+                    error -> {
+                        DialogUtils.showError("Fehler beim Löschen", "Ein Fehler ist aufgetreten.\n" + error.getMessage());
+                        setButtonsEnabled(true);
+                    }
+            );
+        }
     }
 
     private void setButtonsEnabled(boolean enabled) {
@@ -384,21 +375,5 @@ public class AssignmentView extends BorderPane {
             editButton.setDisable(true);
             deleteButton.setDisable(true);
         }
-    }
-
-    private void showErrorDialog(String title, String header, String content) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
-    }
-
-    private void showInfoDialog(String header, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Information");
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
     }
 }
