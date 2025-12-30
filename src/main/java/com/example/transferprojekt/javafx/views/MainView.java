@@ -129,11 +129,13 @@ public class MainView extends BorderPane {
     }
 
     private void insertTestData() {
-        String message = "Dies wird alle vorhandenen Daten löschen und Testdaten einfügen.\n\n" +
-                "Eingefügte Daten:\n" +
-                "- 3 Lieferanten (Hof Müller, Biofarm Huber, Alpenmilch AG)\n" +
-                "- 3 Zuweisungen\n" +
-                "- 4 Milchlieferungen";
+        String message =
+                """
+                Dies wird alle vorhandenen Daten löschen und Testdaten einfügen.
+                Testdaten:
+                - 3 Lieferanten
+                - 3 Zuweisungen
+                - 4 Milchlieferungen""";
 
         if (DialogUtils.showConfirmation("Testdaten einfügen", "Testdaten einfügen?", message)) {
             AsyncDatabaseTask.runVoid(
@@ -145,12 +147,10 @@ public class MainView extends BorderPane {
                     () -> {
                         refreshAllViews();
 
-                        DialogUtils.showInfo("Erfolg", "Testdaten erfolgreich eingefügt",
-                                "3 Lieferanten, 3 Zuweisungen und 4 Milchlieferungen wurden erstellt.\n\n" +
-                                        "Sie befinden sich jetzt im Dashboard mit den aktualisierten Statistiken.");
+                        DialogUtils.showInfo("Erfolg", "Testdaten erfolgreich eingefügt", "Sie befinden sich jetzt im Dashboard mit den aktualisierten Statistiken.");
                     },
                     error -> {
-                        DialogUtils.showError("Fehler", "Testdaten konnten nicht eingefügt werden.\n" + error.getMessage());
+                        DialogUtils.showError("Fehler", "Testdaten konnten nicht eingefügt werden." + error.getMessage());
                         error.printStackTrace();
                     }
             );
@@ -158,11 +158,13 @@ public class MainView extends BorderPane {
     }
 
     private void clearAllData() {
-        String message = "Diese Aktion kann nicht rückgängig gemacht werden!\n\n" +
-                "Folgende Daten werden gelöscht:\n" +
-                "- Alle Lieferanten\n" +
-                "- Alle Zuweisungen\n" +
-                "- Alle Milchlieferungen";
+        String message =
+                """
+                Diese Aktion kann nicht rückgängig gemacht werden!
+                Folgende Daten werden gelöscht:
+                - Alle Lieferanten
+                - Alle Zuweisungen
+                - Alle Milchlieferungen""";
 
         if (DialogUtils.showConfirmation("Alle Daten löschen", "WARNUNG: Alle Daten löschen?", message)) {
             TextInputDialog dialog = new TextInputDialog();
@@ -194,9 +196,10 @@ public class MainView extends BorderPane {
 
     private void showAboutDialog() {
         DialogUtils.showInfo("Über MilkCalc", "MilkCalc - Milchlieferungs-Verwaltung",
-                "Version: 0.0.1-SNAPSHOT\n" +
-                        "Entwickelt als Praxisarbeit\n" +
-                        "Technologien: JavaFX + Spring Boot + PostgreSQL\n\n" +
-                        "© 2025");
+                """
+                        Version: 0.0.1-SNAPSHOT
+                        Entwickelt als Praxisarbeit
+                        Technologien: JavaFX / Spring Boot / Hibernate / PostgreSQL
+                        2025 - Michael Gasser""");
     }
 }

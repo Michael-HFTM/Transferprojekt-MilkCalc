@@ -46,13 +46,13 @@ public class StageInitializer implements ApplicationListener<StageReadyEvent> {
         );
 
         // Create scene with appropriate size
-        Scene scene = new Scene(mainView, 1200, 800);
+        Scene scene = new Scene(mainView, 900, 600);
 
         // Configure stage
         stage.setScene(scene);
         stage.setTitle("MilkCalc - Milchlieferungs-Verwaltung");
-        stage.setMinWidth(800);
-        stage.setMinHeight(600);
+        stage.setMinWidth(600);
+        stage.setMinHeight(400);
 
         // Show stage
         stage.show();
