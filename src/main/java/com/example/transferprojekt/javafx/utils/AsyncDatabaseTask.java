@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 /**
  * Generic helper class for executing database operations asynchronously
  * to prevent GUI freezing during long-running operations.
+ * Shows wait cursor during operation.
  *
  * @param <T> The return type of the database operation
  */
@@ -32,9 +33,9 @@ public class AsyncDatabaseTask<T> extends Task<T> {
     }
 
     /**
-     * Executes the database operation with loading indicator and callbacks
+     * Executes the database operation with loading indicator (cursor) and callbacks
      *
-     * @param parent The parent region to show the loading overlay on
+     * @param parent The parent region to change cursor on
      * @param onSuccess Callback when operation succeeds
      * @param onError Callback when operation fails
      */
@@ -43,13 +44,12 @@ public class AsyncDatabaseTask<T> extends Task<T> {
             Consumer<T> onSuccess,
             Consumer<Throwable> onError
     ) {
-        // Show loading overlay
-        LoadingOverlay overlay = new LoadingOverlay();
-        overlay.show(parent);
+        // Change cursor to wait cursor
+        Platform.runLater(() -> parent.setCursor(javafx.scene.Cursor.WAIT));
 
         // Handle success
         setOnSucceeded(event -> {
-            overlay.hide();
+            Platform.runLater(() -> parent.setCursor(javafx.scene.Cursor.DEFAULT));
             if (onSuccess != null) {
                 @SuppressWarnings("unchecked")
                 T result = (T) event.getSource().getValue();
@@ -59,7 +59,7 @@ public class AsyncDatabaseTask<T> extends Task<T> {
 
         // Handle failure
         setOnFailed(event -> {
-            overlay.hide();
+            Platform.runLater(() -> parent.setCursor(javafx.scene.Cursor.DEFAULT));
             Throwable exception = event.getSource().getException();
             if (onError != null) {
                 onError.accept(exception);

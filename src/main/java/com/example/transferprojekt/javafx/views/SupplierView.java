@@ -2,6 +2,7 @@ package com.example.transferprojekt.javafx.views;
 
 import com.example.transferprojekt.dataclasses.Company;
 import com.example.transferprojekt.javafx.dialogs.SupplierDialog;
+import com.example.transferprojekt.javafx.utils.AsyncDatabaseTask;
 import com.example.transferprojekt.services.SupplierService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -16,6 +17,10 @@ import javafx.scene.layout.VBox;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * View for managing suppliers (CRUD operations)
+ * Now with asynchronous database operations to prevent GUI freezing
+ */
 public class SupplierView extends BorderPane {
 
     private final SupplierService supplierService;
@@ -30,10 +35,12 @@ public class SupplierView extends BorderPane {
 
     // Data
     private ObservableList<Company> supplierList;
+    private List<Company> allSuppliers; // Cache for local filtering
 
     public SupplierView(SupplierService supplierService) {
         this.supplierService = supplierService;
         this.supplierList = FXCollections.observableArrayList();
+        this.allSuppliers = new java.util.ArrayList<>();
 
         initializeUI();
         loadSuppliers();
@@ -167,73 +174,106 @@ public class SupplierView extends BorderPane {
     }
 
     /**
-     * Loads all suppliers from database
+     * Loads all suppliers from database (ASYNC)
      */
     private void loadSuppliers() {
-        try {
-            List<Company> suppliers = supplierService.getDatabaseEntries();
-            supplierList.clear();
-            supplierList.addAll(suppliers);
+        // Disable buttons during loading
+        setButtonsEnabled(false);
 
-            // Clear search field when reloading
-            searchField.clear();
+        AsyncDatabaseTask.run(
+                () -> {
+                    // Database operation in background thread
+                    return supplierService.getDatabaseEntries();
+                },
+                this,  // StackPane for loading overlay
+                suppliers -> {
+                    // Success callback (on JavaFX thread)
+                    allSuppliers = suppliers; // Cache all suppliers
+                    supplierList.clear();
+                    supplierList.addAll(suppliers);
 
-        } catch (Exception e) {
-            showErrorDialog("Fehler beim Laden", "Lieferanten konnten nicht geladen werden.", e.getMessage());
-        }
+                    // Clear search field
+                    searchField.clear();
+
+                    // Re-enable buttons
+                    setButtonsEnabled(true);
+                },
+                error -> {
+                    // Error callback (on JavaFX thread)
+                    showErrorDialog("Fehler beim Laden",
+                            "Lieferanten konnten nicht geladen werden.",
+                            error.getMessage());
+
+                    // Re-enable buttons even on error
+                    setButtonsEnabled(true);
+                }
+        );
     }
 
     /**
-     * Filters suppliers based on search text
+     * Filters suppliers based on search text (LOCAL - no database call)
      */
     private void filterSuppliers(String searchText) {
-        if (searchText == null || searchText.trim().isEmpty()) {
-            loadSuppliers();
+        // Guard: No data loaded yet
+        if (allSuppliers == null) {
             return;
         }
 
-        try {
-            List<Company> allSuppliers = supplierService.getDatabaseEntries();
-            String lowerCaseFilter = searchText.toLowerCase();
-
-            List<Company> filtered = allSuppliers.stream()
-                    .filter(supplier ->
-                            supplier.getAddress().getName().toLowerCase().contains(lowerCaseFilter) ||
-                                    supplier.getAddress().getStreet().toLowerCase().contains(lowerCaseFilter) ||
-                                    supplier.getAddress().getCity().toLowerCase().contains(lowerCaseFilter) ||
-                                    supplier.getAddress().getZip().toLowerCase().contains(lowerCaseFilter) ||
-                                    supplier.getMail().toLowerCase().contains(lowerCaseFilter)
-                    )
-                    .toList();
-
+        // Empty search: show all
+        if (searchText == null || searchText.trim().isEmpty()) {
             supplierList.clear();
-            supplierList.addAll(filtered);
-
-        } catch (Exception e) {
-            showErrorDialog("Fehler bei der Suche", "Suche konnte nicht durchgeführt werden.", e.getMessage());
+            supplierList.addAll(allSuppliers);
+            return;
         }
+
+        // Local filtering - no database call!
+        String lowerCaseFilter = searchText.toLowerCase();
+
+        List<Company> filtered = allSuppliers.stream()
+                .filter(supplier ->
+                        supplier.getAddress().getName().toLowerCase().contains(lowerCaseFilter) ||
+                                supplier.getAddress().getStreet().toLowerCase().contains(lowerCaseFilter) ||
+                                supplier.getAddress().getCity().toLowerCase().contains(lowerCaseFilter) ||
+                                supplier.getAddress().getZip().toLowerCase().contains(lowerCaseFilter) ||
+                                supplier.getMail().toLowerCase().contains(lowerCaseFilter)
+                )
+                .toList();
+
+        supplierList.clear();
+        supplierList.addAll(filtered);
     }
 
     /**
-     * Opens dialog to add a new supplier
+     * Opens dialog to add a new supplier (ASYNC save)
      */
     private void addSupplier() {
         SupplierDialog.showAddDialog().ifPresent(newSupplier -> {
-            try {
-                supplierService.save(newSupplier);
-                showInfoDialog("Erfolg", "Lieferant wurde erfolgreich hinzugefügt.");
-                loadSuppliers();
+            setButtonsEnabled(false);
 
-            } catch (Exception e) {
-                showErrorDialog("Fehler beim Hinzufügen",
-                        "Lieferant konnte nicht gespeichert werden.",
-                        e.getMessage());
-            }
+            AsyncDatabaseTask.runVoid(
+                    () -> {
+                        // Database operation in background thread
+                        supplierService.save(newSupplier);
+                    },
+                    this,
+                    () -> {
+                        // Success callback
+                        showInfoDialog("Erfolg", "Lieferant wurde erfolgreich hinzugefügt.");
+                        loadSuppliers(); // Reload table
+                    },
+                    error -> {
+                        // Error callback
+                        showErrorDialog("Fehler beim Hinzufügen",
+                                "Lieferant konnte nicht gespeichert werden.",
+                                error.getMessage());
+                        setButtonsEnabled(true);
+                    }
+            );
         });
     }
 
     /**
-     * Opens dialog to edit selected supplier
+     * Opens dialog to edit selected supplier (ASYNC save)
      */
     private void editSupplier() {
         Company selectedSupplier = tableView.getSelectionModel().getSelectedItem();
@@ -242,21 +282,32 @@ public class SupplierView extends BorderPane {
         }
 
         SupplierDialog.showEditDialog(selectedSupplier).ifPresent(updatedSupplier -> {
-            try {
-                supplierService.save(updatedSupplier);
-                showInfoDialog("Erfolg", "Lieferant wurde erfolgreich aktualisiert.");
-                loadSuppliers();
+            setButtonsEnabled(false);
 
-            } catch (Exception e) {
-                showErrorDialog("Fehler beim Speichern",
-                        "Änderungen konnten nicht gespeichert werden.",
-                        e.getMessage());
-            }
+            AsyncDatabaseTask.runVoid(
+                    () -> {
+                        // Database operation in background thread
+                        supplierService.save(updatedSupplier);
+                    },
+                    this,
+                    () -> {
+                        // Success callback
+                        showInfoDialog("Erfolg", "Lieferant wurde erfolgreich aktualisiert.");
+                        loadSuppliers(); // Reload table
+                    },
+                    error -> {
+                        // Error callback
+                        showErrorDialog("Fehler beim Speichern",
+                                "Änderungen konnten nicht gespeichert werden.",
+                                error.getMessage());
+                        setButtonsEnabled(true);
+                    }
+            );
         });
     }
 
     /**
-     * Deletes selected supplier after confirmation
+     * Deletes selected supplier after confirmation (ASYNC delete)
      */
     private void deleteSupplier() {
         Company selectedSupplier = tableView.getSelectionModel().getSelectedItem();
@@ -276,22 +327,53 @@ public class SupplierView extends BorderPane {
 
         confirmation.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                try {
-                    boolean success = supplierService.deleteById(selectedSupplier.getCompanyId());
+                setButtonsEnabled(false);
 
-                    if (success) {
-                        showInfoDialog("Erfolg", "Lieferant wurde gelöscht.");
-                        loadSuppliers(); // Reload table
-                    } else {
-                        showErrorDialog("Fehler", "Lieferant konnte nicht gelöscht werden.",
-                                "Möglicherweise existieren noch Zuweisungen für diesen Lieferanten.");
-                    }
-
-                } catch (Exception e) {
-                    showErrorDialog("Fehler beim Löschen", "Ein Fehler ist aufgetreten.", e.getMessage());
-                }
+                AsyncDatabaseTask.run(
+                        () -> {
+                            // Database operation in background thread
+                            return supplierService.deleteById(selectedSupplier.getCompanyId());
+                        },
+                        this,
+                        success -> {
+                            // Success callback
+                            if (success) {
+                                showInfoDialog("Erfolg", "Lieferant wurde gelöscht.");
+                                loadSuppliers(); // Reload table
+                            } else {
+                                showErrorDialog("Fehler", "Lieferant konnte nicht gelöscht werden.",
+                                        "Möglicherweise existieren noch Zuweisungen für diesen Lieferanten.");
+                                setButtonsEnabled(true);
+                            }
+                        },
+                        error -> {
+                            // Error callback
+                            showErrorDialog("Fehler beim Löschen",
+                                    "Ein Fehler ist aufgetreten.",
+                                    error.getMessage());
+                            setButtonsEnabled(true);
+                        }
+                );
             }
         });
+    }
+
+    /**
+     * Helper method to enable/disable all buttons
+     */
+    private void setButtonsEnabled(boolean enabled) {
+        addButton.setDisable(!enabled);
+        refreshButton.setDisable(!enabled);
+
+        // Edit and delete depend on selection
+        if (enabled) {
+            boolean hasSelection = tableView.getSelectionModel().getSelectedItem() != null;
+            editButton.setDisable(!hasSelection);
+            deleteButton.setDisable(!hasSelection);
+        } else {
+            editButton.setDisable(true);
+            deleteButton.setDisable(true);
+        }
     }
 
     /**
