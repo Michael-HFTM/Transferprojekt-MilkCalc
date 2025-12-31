@@ -274,10 +274,7 @@ public class AssignmentView extends BorderPane {
             AsyncDatabaseTask.runVoid(
                     () -> assignmentService.save(newAssignment),
                     this,
-                    () -> {
-                        DialogUtils.showInfo("Erfolg", "Zuweisung wurde erfolgreich hinzugefügt.");
-                        loadAssignments();
-                    },
+                    this::loadAssignments,
                     error -> {
                         DialogUtils.showError("Fehler beim Hinzufügen",
                                 "Zuweisung konnte nicht gespeichert werden.\n" + error.getMessage());
@@ -303,10 +300,7 @@ public class AssignmentView extends BorderPane {
                     AsyncDatabaseTask.runVoid(
                             () -> assignmentService.save(updatedAssignment),
                             this,
-                            () -> {
-                                DialogUtils.showInfo("Erfolg", "Zuweisung wurde erfolgreich aktualisiert.");
-                                loadAssignments();
-                            },
+                            this::loadAssignments,
                             error -> {
                                 DialogUtils.showError("Fehler beim Speichern",
                                         "Änderungen konnten nicht gespeichert werden.\n" + error.getMessage());
@@ -347,7 +341,6 @@ public class AssignmentView extends BorderPane {
                     this,
                     success -> {
                         if (success) {
-                            DialogUtils.showInfo("Erfolg", "Zuweisung wurde gelöscht.");
                             loadAssignments();
                         } else {
                             DialogUtils.showError("Fehler", "Zuweisung konnte nicht gelöscht werden.\n" +
