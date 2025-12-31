@@ -231,10 +231,7 @@ public class MilkDeliveryView extends BorderPane {
             AsyncDatabaseTask.runVoid(
                     () -> milkDeliveryService.save(newDelivery),
                     this,
-                    () -> {
-                        DialogUtils.showInfo("Erfolg", "Milchlieferung wurde erfolgreich hinzugefügt.");
-                        loadDeliveries();
-                    },
+                    this::loadDeliveries,
                     error -> {
                         DialogUtils.showError("Fehler beim Hinzufügen",
                                 "Milchlieferung konnte nicht gespeichert werden.\n" + error.getMessage());
@@ -260,10 +257,7 @@ public class MilkDeliveryView extends BorderPane {
                     AsyncDatabaseTask.runVoid(
                             () -> milkDeliveryService.save(updatedDelivery),
                             this,
-                            () -> {
-                                DialogUtils.showInfo("Erfolg", "Milchlieferung wurde erfolgreich aktualisiert.");
-                                loadDeliveries();
-                            },
+                            this::loadDeliveries,
                             error -> {
                                 DialogUtils.showError("Fehler beim Speichern",
                                         "Änderungen konnten nicht gespeichert werden.\n" + error.getMessage());
@@ -294,7 +288,6 @@ public class MilkDeliveryView extends BorderPane {
                     this,
                     success -> {
                         if (success) {
-                            DialogUtils.showInfo("Erfolg", "Milchlieferung wurde gelöscht.");
                             loadDeliveries();
                         } else {
                             DialogUtils.showError("Fehler", "Milchlieferung konnte nicht gelöscht werden.\n" +

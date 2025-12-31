@@ -248,17 +248,14 @@ public class SupplierView extends BorderPane {
         SupplierDialog.showAddDialog().ifPresent(newSupplier -> {
             setButtonsEnabled(false);
 
+            // Reload table
             AsyncDatabaseTask.runVoid(
                     () -> {
                         // Database operation in background thread
                         supplierService.save(newSupplier);
                     },
                     this,
-                    () -> {
-                        // Success callback
-                        DialogUtils.showInfo("Erfolg", "Lieferant wurde erfolgreich hinzugefügt.");
-                        loadSuppliers(); // Reload table
-                    },
+                    this::loadSuppliers,
                     error -> {
                         // Error callback
                         DialogUtils.showError("Fehler beim Hinzufügen",
@@ -287,11 +284,7 @@ public class SupplierView extends BorderPane {
                         supplierService.save(updatedSupplier);
                     },
                     this,
-                    () -> {
-                        // Success callback
-                        DialogUtils.showInfo("Erfolg", "Lieferant wurde erfolgreich aktualisiert.");
-                        loadSuppliers(); // Reload table
-                    },
+                    this::loadSuppliers,
                     error -> {
                         // Error callback
                         DialogUtils.showError("Fehler beim Speichern",
@@ -327,7 +320,6 @@ public class SupplierView extends BorderPane {
                     success -> {
                         // Success callback
                         if (success) {
-                            DialogUtils.showInfo("Erfolg", "Lieferant wurde gelöscht.");
                             loadSuppliers(); // Reload table
                         } else {
                             DialogUtils.showError("Fehler",
