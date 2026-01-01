@@ -61,11 +61,12 @@ public class TestdataService {
 
 
         /* Creating deliveries */
-        MilkDelivery md1 = new MilkDelivery(new BigDecimal("150.50"),  LocalDate.parse("2025-09-01"), snr1 , TimeWindow.MORGEN );
-        MilkDelivery md2 = new MilkDelivery(new BigDecimal("130.00"),  LocalDate.parse("2025-09-01"), snr2 , TimeWindow.MORGEN );
-        MilkDelivery md3 = new MilkDelivery(new BigDecimal("105.75"),  LocalDate.parse("2025-09-01"), snr3 , TimeWindow.MORGEN );
-        MilkDelivery md4 = new MilkDelivery(new BigDecimal("103.20"),  LocalDate.parse("2025-09-01"), snr3 , TimeWindow.ABEND );
-        ArrayList<MilkDelivery> milkDeliveries = new ArrayList<>(List.of(md1, md2, md3, md4));
+        MilkDelivery md1 = new MilkDelivery(new BigDecimal("150.50"),  LocalDate.parse("2026-01-01"), snr1 , TimeWindow.MORGEN );
+        MilkDelivery md2 = new MilkDelivery(new BigDecimal("140.20"),  LocalDate.parse("2026-01-01"), snr1 , TimeWindow.ABEND);
+        MilkDelivery md3 = new MilkDelivery(new BigDecimal("200.00"),  LocalDate.parse("2026-01-01"), snr2 , TimeWindow.MORGEN );
+        MilkDelivery md4 = new MilkDelivery(new BigDecimal("105.75"),  LocalDate.parse("2026-01-01"), snr3 , TimeWindow.MORGEN );
+        MilkDelivery md5 = new MilkDelivery(new BigDecimal("103.20"),  LocalDate.parse("2026-01-01"), snr3 , TimeWindow.ABEND );
+        ArrayList<MilkDelivery> milkDeliveries = new ArrayList<>(List.of(md1, md2, md3, md4,md5));
         System.out.println();
         System.out.println("Newly created Dataclasses:");
         printAllToString(milkDeliveries);
