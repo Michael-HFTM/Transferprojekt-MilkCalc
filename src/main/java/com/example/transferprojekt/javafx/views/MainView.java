@@ -200,6 +200,6 @@ public class MainView extends BorderPane {
                         Version: 0.0.1-SNAPSHOT
                         Entwickelt als Praxisarbeit
                         Technologien: JavaFX / Spring Boot / Hibernate / PostgreSQL
-                        2025 - Michael Gasser""");
+                        2026 - Michael Gasser""");
     }
 }
