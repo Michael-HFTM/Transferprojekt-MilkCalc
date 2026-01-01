@@ -5,6 +5,7 @@ import com.example.transferprojekt.dataclasses.Company;
 import com.example.transferprojekt.dataclasses.SupplierNumber;
 import com.example.transferprojekt.javafx.utils.AsyncDatabaseTask;
 import com.example.transferprojekt.javafx.utils.DialogUtils;
+import com.example.transferprojekt.services.AssignmentService;
 import com.example.transferprojekt.services.SupplierService;
 import com.example.transferprojekt.services.SupplierNrService;
 import javafx.application.Platform;
@@ -24,20 +25,25 @@ public class AssignmentDialog extends Dialog<Assignment> {
 
     private final SupplierService supplierService;
     private final SupplierNrService supplierNrService;
+    private final AssignmentService assignmentService;
 
     private final Assignment existingAssignment;
     private final boolean isEditMode;
 
-    private AssignmentDialog(SupplierService supplierService, SupplierNrService supplierNrService) {
-        this(null, supplierService, supplierNrService);
+    private AssignmentDialog(SupplierService supplierService,
+                             SupplierNrService supplierNrService,
+                             AssignmentService assignmentService) {
+        this(null, supplierService, supplierNrService, assignmentService);
     }
 
     private AssignmentDialog(Assignment existingAssignment,
                              SupplierService supplierService,
-                             SupplierNrService supplierNrService) {
+                             SupplierNrService supplierNrService,
+                             AssignmentService assignmentService) {
         this.existingAssignment = existingAssignment;
         this.supplierService = supplierService;
         this.supplierNrService = supplierNrService;
+        this.assignmentService = assignmentService;
         this.isEditMode = existingAssignment != null;
 
         setupDialog();
@@ -336,6 +342,28 @@ public class AssignmentDialog extends Dialog<Assignment> {
                 LocalDate validFrom = validFromDatePicker.getValue();
                 LocalDate validTo = validToDatePicker.getValue();
 
+                // Validation: Check for overlapping assignments
+                java.util.UUID excludeId = isEditMode ? existingAssignment.getAssignmentId() : null;
+
+                // Perform check synchronously (dialog blocks anyway)
+                boolean hasOverlap = assignmentService.hasOverlappingAssignment(
+                        selectedSupplierNumber.getId(),
+                        validFrom,
+                        validTo,
+                        excludeId
+                );
+
+                if (hasOverlap) {
+                    DialogUtils.showError(
+                            "Überschneidung erkannt",
+                            "Die Lieferantennummer " + selectedSupplierNumber.getId() +
+                                    " ist im gewählten Zeitraum bereits zugewiesen.",
+                            "Bitte wählen Sie eine andere Nummer oder passen Sie den Zeitraum an."
+                    );
+                    return null;
+                }
+
+                // Create assignment if validation passed
                 if (isEditMode) {
                     return new Assignment(
                             existingAssignment.getAssignmentId(),
@@ -358,15 +386,17 @@ public class AssignmentDialog extends Dialog<Assignment> {
     }
 
     public static Optional<Assignment> showAddDialog(SupplierService supplierService,
-                                                     SupplierNrService supplierNrService) {
-        AssignmentDialog dialog = new AssignmentDialog(supplierService, supplierNrService);
+                                                     SupplierNrService supplierNrService,
+                                                     AssignmentService assignmentService) {
+        AssignmentDialog dialog = new AssignmentDialog(supplierService, supplierNrService, assignmentService);
         return dialog.showAndWait();
     }
 
     public static Optional<Assignment> showEditDialog(Assignment assignment,
                                                       SupplierService supplierService,
-                                                      SupplierNrService supplierNrService) {
-        AssignmentDialog dialog = new AssignmentDialog(assignment, supplierService, supplierNrService);
+                                                      SupplierNrService supplierNrService,
+                                                      AssignmentService assignmentService) {
+        AssignmentDialog dialog = new AssignmentDialog(assignment, supplierService, supplierNrService, assignmentService);
         return dialog.showAndWait();
     }
 }
