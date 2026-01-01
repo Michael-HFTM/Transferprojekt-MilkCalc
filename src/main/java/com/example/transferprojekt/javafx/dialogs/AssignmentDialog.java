@@ -81,7 +81,7 @@ public class AssignmentDialog extends Dialog<Assignment> {
         // Supplier ComboBox
         supplierComboBox = new ComboBox<>();
         supplierComboBox.setPromptText("Lieferant auswählen");
-        supplierComboBox.setPrefWidth(300);
+        supplierComboBox.setPrefWidth(250);
         supplierComboBox.setDisable(true); // Disabled until data loaded
 
         grid.add(new Label("Lieferant:"), 0, 0);
@@ -90,7 +90,7 @@ public class AssignmentDialog extends Dialog<Assignment> {
         // Supplier Number ComboBox
         supplierNumberComboBox = new ComboBox<>();
         supplierNumberComboBox.setPromptText("Lieferantennummer auswählen");
-        supplierNumberComboBox.setPrefWidth(200);
+        supplierNumberComboBox.setPrefWidth(150);
         supplierNumberComboBox.setDisable(true); // Disabled until data loaded
 
         grid.add(new Label("Lieferantennummer:"), 0, 1);
@@ -100,12 +100,16 @@ public class AssignmentDialog extends Dialog<Assignment> {
         validFromDatePicker = new DatePicker();
         validFromDatePicker.setPromptText("Gültig ab");
         validFromDatePicker.setValue(LocalDate.now());
+        validFromDatePicker.setPrefWidth(150);
+        validFromDatePicker.setStyle("-fx-border-color: transparent; -fx-border-radius: 1px;");
         grid.add(new Label("Gültig ab:"), 0, 2);
         grid.add(validFromDatePicker, 1, 2);
 
         // Valid To DatePicker
         validToDatePicker = new DatePicker();
-        validToDatePicker.setPromptText("Gültig bis (optional - leer = unbefristet)");
+        validToDatePicker.setPromptText("Gültig bis (optional)");
+        validToDatePicker.setPrefWidth(150);
+        validToDatePicker.setStyle("-fx-border-color: transparent; -fx-border-radius: 1px;");
         grid.add(new Label("Gültig bis:"), 0, 3);
         grid.add(validToDatePicker, 1, 3);
 
@@ -207,9 +211,9 @@ public class AssignmentDialog extends Dialog<Assignment> {
 
         validFromDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == null) {
-                validFromDatePicker.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+                validFromDatePicker.setStyle("-fx-border-color: red; -fx-border-radius: 2px;");
             } else {
-                validFromDatePicker.setStyle("-fx-border-color: green; -fx-border-width: 2px;");
+                validFromDatePicker.setStyle("-fx-border-color: green; -fx-border-radius: 2px;");
             }
         });
 
@@ -219,11 +223,11 @@ public class AssignmentDialog extends Dialog<Assignment> {
             } else {
                 LocalDate validFrom = validFromDatePicker.getValue();
                 if (validFrom != null && newVal.isAfter(validFrom)) {
-                    validToDatePicker.setStyle("-fx-border-color: green; -fx-border-width: 2px;");
+                    validToDatePicker.setStyle("-fx-border-color: green; -fx-border-radius: 2px;");
                 } else if (validFrom != null && !newVal.isAfter(validFrom)) {
-                    validToDatePicker.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+                    validToDatePicker.setStyle("-fx-border-color: red; -fx-border-radius: 2px;");
                 } else {
-                    validToDatePicker.setStyle("");
+                    validToDatePicker.setStyle("-fx-border-color: transparent; -fx-border-radius: 2px;");
                 }
             }
         });
@@ -232,9 +236,9 @@ public class AssignmentDialog extends Dialog<Assignment> {
             LocalDate validTo = validToDatePicker.getValue();
             if (validTo != null && newVal != null) {
                 if (validTo.isAfter(newVal)) {
-                    validToDatePicker.setStyle("-fx-border-color: green; -fx-border-width: 2px;");
+                    validToDatePicker.setStyle("-fx-border-color: green; -fx-border-radius: 2px;");
                 } else {
-                    validToDatePicker.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+                    validToDatePicker.setStyle("-fx-border-color: red; -fx-border-radius: 2px;");
                 }
             }
         });
