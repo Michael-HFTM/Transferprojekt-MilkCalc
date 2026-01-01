@@ -28,6 +28,45 @@ public class AssignmentService {
     }
 
     /**
+     * Checks if there is an overlapping assignment for the given supplier number
+     * in the specified time range (excluding the assignment with excludeId if editing)
+     *
+     * @param supplierNumberId The supplier number to check
+     * @param validFrom Start date of the assignment
+     * @param validTo End date of the assignment (can be null for open-ended)
+     * @param excludeAssignmentId Assignment ID to exclude from check (for edit mode)
+     * @return true if there is an overlapping assignment, false otherwise
+     */
+    public boolean hasOverlappingAssignment(int supplierNumberId, LocalDate validFrom, LocalDate validTo, UUID excludeAssignmentId) {
+        List<AssignmentEntity> existingAssignments = assignmentRepository.findAll();
+
+        return existingAssignments.stream()
+                .filter(a -> a.getSupplierNr().getSupplierNr() == supplierNumberId)
+                .filter(a -> excludeAssignmentId == null || !a.getAssignmentId().equals(excludeAssignmentId))
+                .anyMatch(existing -> {
+                    LocalDate existingFrom = existing.getAssignmentStartDate();
+                    LocalDate existingTo = existing.getAssignmentEndDate();
+
+                    // Check for overlap
+                    // Case 1: New assignment has no end date
+                    if (validTo == null) {
+                        // Overlaps if existing has no end date, or existing end is after or equal to new start
+                        return existingTo == null || !existingTo.isBefore(validFrom);
+                    }
+
+                    // Case 2: Existing assignment has no end date
+                    if (existingTo == null) {
+                        // Overlaps if new end is after or equal to existing start
+                        return !validTo.isBefore(existingFrom);
+                    }
+
+                    // Case 3: Both have end dates - check for any overlap
+                    // No overlap only if: new ends before existing starts OR new starts after existing ends
+                    return !(validTo.isBefore(existingFrom) || validFrom.isAfter(existingTo));
+                });
+    }
+
+    /**
      * Saves an assignment (CREATE or UPDATE)
      * If assignment has an ID, it updates; otherwise creates new
      */

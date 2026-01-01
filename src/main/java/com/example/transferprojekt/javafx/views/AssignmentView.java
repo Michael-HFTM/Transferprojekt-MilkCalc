@@ -268,7 +268,7 @@ public class AssignmentView extends BorderPane {
      * Opens dialog to add a new assignment (ASYNC)
      */
     private void addAssignment() {
-        AssignmentDialog.showAddDialog(supplierService, supplierNrService).ifPresent(newAssignment -> {
+        AssignmentDialog.showAddDialog(supplierService, supplierNrService, assignmentService).ifPresent(newAssignment -> {
             setButtonsEnabled(false);
 
             AsyncDatabaseTask.runVoid(
@@ -293,7 +293,7 @@ public class AssignmentView extends BorderPane {
             return;
         }
 
-        AssignmentDialog.showEditDialog(selectedAssignment, supplierService, supplierNrService)
+        AssignmentDialog.showEditDialog(selectedAssignment, supplierService, supplierNrService, assignmentService)
                 .ifPresent(updatedAssignment -> {
                     setButtonsEnabled(false);
 
