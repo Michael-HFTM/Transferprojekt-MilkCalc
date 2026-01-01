@@ -81,31 +81,37 @@ public class SupplierDialog extends Dialog<Company> {
         // Name field
         nameField = new TextField();
         nameField.setPromptText("z.B. Hof Müller");
+        nameField.setPrefWidth(200);
         grid.add(new Label("Name:"), 0, 0);
         grid.add(nameField, 1, 0);
 
         // Street field
         streetField = new TextField();
         streetField.setPromptText("z.B. Dorfstrasse 12");
+        streetField.setPrefWidth(200);
         grid.add(new Label("Strasse:"), 0, 1);
         grid.add(streetField, 1, 1);
 
         // ZIP field
         zipField = new TextField();
         zipField.setPromptText("z.B. 3000");
-        zipField.setPrefWidth(100);
+        zipField.setPrefWidth(200);
+        zipField.setStyle("-fx-border-color: transparent; -fx-border-radius: 2px;");
         grid.add(new Label("PLZ:"), 0, 2);
         grid.add(zipField, 1, 2);
 
         // City field
         cityField = new TextField();
         cityField.setPromptText("z.B. Bern");
+        cityField.setPrefWidth(200);
         grid.add(new Label("Ort:"), 0, 3);
         grid.add(cityField, 1, 3);
 
         // Email field
         emailField = new TextField();
         emailField.setPromptText("z.B. info@hof-mueller.ch");
+        emailField.setPrefWidth(200);
+        emailField.setStyle("-fx-border-color: transparent; -fx-border-radius: 2px;");
         grid.add(new Label("Email:"), 0, 4);
         grid.add(emailField, 1, 4);
 
@@ -140,21 +146,21 @@ public class SupplierDialog extends Dialog<Company> {
         // Add visual feedback for validation
         zipField.textProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal.isEmpty()) {
-                zipField.setStyle("");
+                zipField.setStyle("-fx-border-color: transparent; -fx-border-radius: 2px;");
             } else if (ZIP_PATTERN.matcher(newVal).matches()) {
-                zipField.setStyle("-fx-border-color: green; -fx-border-width: 2px;");
+                zipField.setStyle("-fx-border-color: green; -fx-border-radius: 2px;");
             } else {
-                zipField.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+                zipField.setStyle("-fx-border-color: red; -fx-border-radius: 2px;");
             }
         });
 
         emailField.textProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal.isEmpty()) {
-                emailField.setStyle("");
+                emailField.setStyle("-fx-border-color: transparent; -fx-border-radius: 2px;");
             } else if (EMAIL_PATTERN.matcher(newVal).matches()) {
-                emailField.setStyle("-fx-border-color: green; -fx-border-width: 2px;");
+                emailField.setStyle("-fx-border-color: green; -fx-border-radius: 2px;");
             } else {
-                emailField.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+                emailField.setStyle("-fx-border-color: red; -fx-border-radius: 2px;");
             }
         });
     }

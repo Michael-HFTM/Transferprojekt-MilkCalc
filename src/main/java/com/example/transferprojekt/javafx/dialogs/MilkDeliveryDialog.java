@@ -85,6 +85,8 @@ public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
         datePicker = new DatePicker();
         datePicker.setPromptText("Lieferdatum");
         datePicker.setValue(LocalDate.now());
+        datePicker.setPrefWidth(200);
+        datePicker.setStyle("-fx-border-color: transparent; -fx-border-radius: 2px;");
         grid.add(new Label("Datum:"), 0, 1);
         grid.add(datePicker, 1, 1);
 
@@ -92,6 +94,7 @@ public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
         timeWindowComboBox = new ComboBox<>();
         timeWindowComboBox.setPromptText("Zeitfenster auswählen");
         timeWindowComboBox.getItems().addAll(TimeWindow.values());
+        timeWindowComboBox.setPrefWidth(200);
 
         timeWindowComboBox.setCellFactory(param -> new ListCell<>() {
             @Override
@@ -123,6 +126,8 @@ public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
         // Amount TextField
         amountField = new TextField();
         amountField.setPromptText("z.B. 150.50");
+        amountField.setPrefWidth(200);
+        amountField.setStyle("-fx-border-color: transparent; -fx-border-radius: 2px;");
         grid.add(new Label("Menge (kg):"), 0, 3);
         grid.add(amountField, 1, 3);
 
@@ -187,19 +192,19 @@ public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
 
         datePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == null) {
-                datePicker.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+                datePicker.setStyle("-fx-border-color: red; -fx-border-radius: 2px;");
             } else {
-                datePicker.setStyle("-fx-border-color: green; -fx-border-width: 2px;");
+                datePicker.setStyle("-fx-border-color: green; -fx-border-radius: 2px;");
             }
         });
 
         amountField.textProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal.trim().isEmpty()) {
-                amountField.setStyle("");
+                amountField.setStyle("-fx-border-color: transparent; -fx-border-radius: 2px;");
             } else if (isValidAmount(newVal)) {
-                amountField.setStyle("-fx-border-color: green; -fx-border-width: 2px;");
+                amountField.setStyle("-fx-border-color: green; -fx-border-radius: 2px;");
             } else {
-                amountField.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+                amountField.setStyle("-fx-border-color: red; -fx-border-radius: 2px;");
             }
         });
 
