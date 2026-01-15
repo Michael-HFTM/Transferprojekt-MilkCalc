@@ -19,7 +19,8 @@
 
 ```bash
 git clone <repository-url>
-cd transferprojekt
+# Wechsel in das Projektverzeichniss
+cd Transferprojekt-MilkCalc
 ```
 
 ### 2. Datenbank starten
@@ -39,6 +40,9 @@ mvn clean compile
 ```
 
 ### 4. Anwendung testen
+
+**Hinweis:**
+Es ist wichtig dass die Datenbank **beim Programmstart** erreichbar ist, ansonsten schlägt die Schemavalidierung fehl und es kommt zu einem Programmabsturtz. Sobald die Applikation erfolgreich gestartet wurde können Verbindunsunterbrüche simuliert werden und sollten entsprechend gehandelt werden. 
 
 #### 4.1 GUI starten
 ```bash
