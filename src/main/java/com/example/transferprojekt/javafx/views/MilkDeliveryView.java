@@ -19,14 +19,16 @@ import java.util.concurrent.Callable;
  * View for managing milk deliveries.
  */
 public class MilkDeliveryView extends BaseView<MilkDelivery> {
-
     private final MilkDeliveryService milkDeliveryService;
     private final SupplierNrService supplierNrService;
+    private final com.example.transferprojekt.services.AssignmentService assignmentService;
 
     public MilkDeliveryView(MilkDeliveryService milkDeliveryService,
-                            SupplierNrService supplierNrService) {
+                            SupplierNrService supplierNrService,
+                            com.example.transferprojekt.services.AssignmentService assignmentService) {
         this.milkDeliveryService = milkDeliveryService;
         this.supplierNrService = supplierNrService;
+        this.assignmentService = assignmentService;
     }
 
     @Override
@@ -93,7 +95,7 @@ public class MilkDeliveryView extends BaseView<MilkDelivery> {
 
     @Override
     protected void onAdd() {
-        MilkDeliveryDialog.showAddDialog(supplierNrService).ifPresent(newDelivery -> {
+        MilkDeliveryDialog.showAddDialog(supplierNrService, assignmentService).ifPresent(newDelivery -> {
             setButtonsEnabled(false);
             AsyncDatabaseTask.runVoid(
                     () -> milkDeliveryService.save(newDelivery),
@@ -113,7 +115,7 @@ public class MilkDeliveryView extends BaseView<MilkDelivery> {
         MilkDelivery selectedDelivery = tableView.getSelectionModel().getSelectedItem();
         if (selectedDelivery == null) return;
 
-        MilkDeliveryDialog.showEditDialog(selectedDelivery, supplierNrService)
+        MilkDeliveryDialog.showEditDialog(selectedDelivery, supplierNrService, assignmentService)
                 .ifPresent(updatedDelivery -> {
                     setButtonsEnabled(false);
                     AsyncDatabaseTask.runVoid(
