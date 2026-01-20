@@ -5,10 +5,12 @@ import com.example.transferprojekt.dataclasses.SupplierNumber;
 import com.example.transferprojekt.jpa.repositories.SupplierNrRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class SupplierNrService {
 
     private final SupplierNrRepository supplierNrRepository;

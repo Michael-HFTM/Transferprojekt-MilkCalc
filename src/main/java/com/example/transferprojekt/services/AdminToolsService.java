@@ -4,8 +4,10 @@ import com.example.transferprojekt.jpa.repositories.AssignmentRepository;
 import com.example.transferprojekt.jpa.repositories.MilkDeliveryRepository;
 import com.example.transferprojekt.jpa.repositories.SupplierRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class AdminToolsService {
 
     private final AssignmentRepository assignmentRepository;

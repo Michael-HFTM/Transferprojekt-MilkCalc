@@ -3,6 +3,7 @@ package com.example.transferprojekt.services;
 import com.example.transferprojekt.dataclasses.*;
 import com.example.transferprojekt.enumerations.TimeWindow;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Transactional
 public class TestdataService {
 
     private final AssignmentService assignmentService;
