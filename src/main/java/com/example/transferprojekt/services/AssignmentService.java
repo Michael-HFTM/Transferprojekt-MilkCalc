@@ -125,15 +125,16 @@ public class AssignmentService {
     public Assignment mapToDataclass(AssignmentEntity entity) {
         UUID assignmentId = entity.getAssignmentId();
         UUID supplierId = entity.getSupplierEntity().getSupplierId();
+        String supplierName = entity.getSupplierEntity().getName();
         LocalDate startDate = entity.getAssignmentStartDate();
         LocalDate endDate = entity.getAssignmentEndDate();
         SupplierNumber supplierNumber = supplierNrService.mapToDataclass(entity.getSupplierNr());
 
-        return new Assignment(assignmentId, supplierId, supplierNumber, startDate, endDate);
+        return new Assignment(assignmentId, supplierId, supplierName, supplierNumber, startDate, endDate);
     }
 
     public List<Assignment> getDatabaseEntries(){
-        List<AssignmentEntity> entities = assignmentRepository.findAll();
+        List<AssignmentEntity> entities = assignmentRepository.findAllWithSuppliers();
         return entities.stream()
                 .map(this::mapToDataclass)
                 .toList();

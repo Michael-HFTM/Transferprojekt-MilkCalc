@@ -115,18 +115,9 @@ public class AssignmentView extends BorderPane {
         supplierIdColumn.setVisible(false);
 
         TableColumn<Assignment, String> supplierNameColumn = new TableColumn<>("Lieferant");
-        supplierNameColumn.setCellValueFactory(cellData -> {
-            UUID supplierId = cellData.getValue().getSupplierId();
-            try {
-                var supplier = supplierService.getById(supplierId);
-                if (supplier != null) {
-                    return new javafx.beans.property.SimpleStringProperty(supplier.getName());
-                }
-            } catch (Exception e) {
-                // Handle error silently
-            }
-            return new javafx.beans.property.SimpleStringProperty("Unbekannt");
-        });
+        supplierNameColumn.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleStringProperty(cellData.getValue().getSupplierName())
+        );
         supplierNameColumn.setPrefWidth(200);
 
         TableColumn<Assignment, String> supplierNumberColumn = new TableColumn<>("Lieferantennummer");
@@ -236,13 +227,9 @@ public class AssignmentView extends BorderPane {
                             .contains(lowerCaseFilter);
 
                     boolean matchesSupplierName = false;
-                    try {
-                        var supplier = supplierService.getById(assignment.getSupplierId());
-                        if (supplier != null) {
-                            matchesSupplierName = supplier.getName().toLowerCase().contains(lowerCaseFilter);
-                        }
-                    } catch (Exception e) {
-                        // Ignore lookup errors
+                    String supplierName = assignment.getSupplierName();
+                    if (supplierName != null) {
+                        matchesSupplierName = supplierName.toLowerCase().contains(lowerCaseFilter);
                     }
 
                     boolean matchesStatus;
