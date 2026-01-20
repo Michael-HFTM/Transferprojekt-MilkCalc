@@ -38,32 +38,9 @@ public class AssignmentService {
      * @return true if there is an overlapping assignment, false otherwise
      */
     public boolean hasOverlappingAssignment(int supplierNumberId, LocalDate validFrom, LocalDate validTo, UUID excludeAssignmentId) {
-        List<AssignmentEntity> existingAssignments = assignmentRepository.findAll();
-
-        return existingAssignments.stream()
-                .filter(a -> a.getSupplierNr().getSupplierNr() == supplierNumberId)
-                .filter(a -> excludeAssignmentId == null || !a.getAssignmentId().equals(excludeAssignmentId))
-                .anyMatch(existing -> {
-                    LocalDate existingFrom = existing.getAssignmentStartDate();
-                    LocalDate existingTo = existing.getAssignmentEndDate();
-
-                    // Check for overlap
-                    // Case 1: New assignment has no end date
-                    if (validTo == null) {
-                        // Overlaps if existing has no end date, or existing end is after or equal to new start
-                        return existingTo == null || !existingTo.isBefore(validFrom);
-                    }
-
-                    // Case 2: Existing assignment has no end date
-                    if (existingTo == null) {
-                        // Overlaps if new end is after or equal to existing start
-                        return !validTo.isBefore(existingFrom);
-                    }
-
-                    // Case 3: Both have end dates - check for any overlap
-                    // No overlap only if: new ends before existing starts OR new starts after existing ends
-                    return !(validTo.isBefore(existingFrom) || validFrom.isAfter(existingTo));
-                });
+        List<AssignmentEntity> overlapping = assignmentRepository.findOverlappingAssignments(
+                supplierNumberId, validFrom, validTo, excludeAssignmentId);
+        return !overlapping.isEmpty();
     }
 
     /**
