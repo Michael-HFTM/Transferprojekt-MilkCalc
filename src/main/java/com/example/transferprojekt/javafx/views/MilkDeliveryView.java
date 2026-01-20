@@ -153,10 +153,14 @@ public class MilkDeliveryView extends BorderPane {
             deleteButton.setDisable(!hasSelection);
         });
 
-        table.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2 && table.getSelectionModel().getSelectedItem() != null) {
-                editDelivery();
-            }
+        table.setRowFactory(tv -> {
+            TableRow<MilkDelivery> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    editDelivery();
+                }
+            });
+            return row;
         });
 
         return table;

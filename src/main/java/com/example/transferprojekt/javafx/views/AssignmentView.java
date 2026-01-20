@@ -178,10 +178,14 @@ public class AssignmentView extends BorderPane {
             deleteButton.setDisable(!hasSelection);
         });
 
-        table.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2 && table.getSelectionModel().getSelectedItem() != null) {
-                editAssignment();
-            }
+        table.setRowFactory(tv -> {
+            TableRow<Assignment> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    editAssignment();
+                }
+            });
+            return row;
         });
 
         return table;
