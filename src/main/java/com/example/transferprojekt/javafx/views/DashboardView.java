@@ -95,34 +95,7 @@ public class DashboardView extends BorderPane {
         supplierFilter.setPromptText("Alle Lieferanten");
         supplierFilter.setPrefWidth(250);
 
-        // Load suppliers async
-        AsyncDatabaseTask.run(
-                supplierService::getDatabaseEntries,
-                this,
-                suppliers -> {
-                    supplierFilter.getItems().add(null); // "Alle" option
-                    supplierFilter.getItems().addAll(suppliers);
-
-                    supplierFilter.setCellFactory(param -> new ListCell<>() {
-                        @Override
-                        protected void updateItem(Company item, boolean empty) {
-                            super.updateItem(item, empty);
-                            setText(empty || item == null ? "Alle Lieferanten" : item.getAddress().getName());
-                        }
-                    });
-
-                    supplierFilter.setButtonCell(new ListCell<>() {
-                        @Override
-                        protected void updateItem(Company item, boolean empty) {
-                            super.updateItem(item, empty);
-                            setText(empty || item == null ? "Alle Lieferanten" : item.getAddress().getName());
-                        }
-                    });
-
-                    supplierFilter.setValue(null);
-                },
-                error -> DialogUtils.showError("Fehler beim Laden", "Lieferanten konnten nicht geladen werden.\n" + error.getMessage())
-        );
+        loadSuppliers();
 
         supplierBox.getChildren().addAll(supplierLabel, supplierFilter);
 
@@ -288,7 +261,55 @@ public class DashboardView extends BorderPane {
      * Called when dashboard tab is selected
      */
     public void refresh() {
+        loadSuppliers();
         loadDataAndCalculate();
+    }
+
+    /**
+     * Loads suppliers for the filter dropdown
+     */
+    private void loadSuppliers() {
+        Company currentSelection = supplierFilter.getValue();
+
+        AsyncDatabaseTask.run(
+                supplierService::getDatabaseEntries,
+                this,
+                suppliers -> {
+                    supplierFilter.getItems().clear();
+                    supplierFilter.getItems().add(null); // "Alle" option
+                    supplierFilter.getItems().addAll(suppliers);
+
+                    supplierFilter.setCellFactory(param -> new ListCell<>() {
+                        @Override
+                        protected void updateItem(Company item, boolean empty) {
+                            super.updateItem(item, empty);
+                            setText(empty || item == null ? "Alle Lieferanten" : item.getAddress().getName());
+                        }
+                    });
+
+                    supplierFilter.setButtonCell(new ListCell<>() {
+                        @Override
+                        protected void updateItem(Company item, boolean empty) {
+                            super.updateItem(item, empty);
+                            setText(empty || item == null ? "Alle Lieferanten" : item.getAddress().getName());
+                        }
+                    });
+
+                    // Restore selection if it still exists
+                    if (currentSelection != null) {
+                        suppliers.stream()
+                                .filter(s -> s.getCompanyId().equals(currentSelection.getCompanyId()))
+                                .findFirst()
+                                .ifPresentOrElse(
+                                        supplierFilter::setValue,
+                                        () -> supplierFilter.setValue(null)
+                                );
+                    } else {
+                        supplierFilter.setValue(null);
+                    }
+                },
+                error -> DialogUtils.showError("Fehler beim Laden", "Lieferanten konnten nicht geladen werden.\n" + error.getMessage())
+        );
     }
 
     /**
