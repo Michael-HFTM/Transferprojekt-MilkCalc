@@ -8,6 +8,7 @@ public class Assignment {
     private UUID assignmentId, supplierId; // DB generated
     private SupplierNumber supplierNumber;
     private LocalDate validFrom, validTo;
+    private String supplierName;
 
 
     public Assignment(UUID supplierId, SupplierNumber supplierNumber, LocalDate validFrom, LocalDate validTo) {
@@ -24,12 +25,29 @@ public class Assignment {
     }
 
     /* constructor for existing DB objects */
+    public Assignment(UUID assignmentId, UUID supplierId, String supplierName, SupplierNumber supplierNumber, LocalDate validFrom, LocalDate validTo) {
+        this.assignmentId = assignmentId;
+        this.supplierId = supplierId;
+        this.supplierName = supplierName;
+        this.supplierNumber = supplierNumber;
+        this.validFrom = validFrom;
+        this.validTo = validTo;
+    }
+
     public Assignment(UUID assignmentId, UUID supplierId, SupplierNumber supplierNumber, LocalDate validFrom, LocalDate validTo) {
         this.assignmentId = assignmentId;
         this.supplierId = supplierId;
         this.supplierNumber = supplierNumber;
         this.validFrom = validFrom;
         this.validTo = validTo;
+    }
+
+    public String getSupplierName() {
+        return supplierName;
+    }
+
+    public void setSupplierName(String supplierName) {
+        this.supplierName = supplierName;
     }
 
     /* constructor for existing DB objects */
