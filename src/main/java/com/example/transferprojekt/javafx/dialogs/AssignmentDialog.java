@@ -162,9 +162,17 @@ public class AssignmentDialog extends Dialog<Assignment> {
 
     private void loadSupplierNumbersAsync() {
         AsyncDatabaseTask.run(
-                supplierNrService::getDatabaseEntries,
+                () -> {
+                    java.util.List<SupplierNumber> numbers = supplierNrService.getDatabaseEntries();
+                    java.util.Map<Integer, String> activeSuppliers = assignmentService.getActiveSupplierNames(LocalDate.now());
+                    return new Object[]{numbers, activeSuppliers};
+                },
                 getDialogPane(),
-                supplierNumbers -> {
+                result -> {
+                    java.util.List<SupplierNumber> supplierNumbers = (java.util.List<SupplierNumber>) result[0];
+                    java.util.Map<Integer, String> activeSuppliers = (java.util.Map<Integer, String>) result[1];
+
+                    supplierNumberComboBox.getItems().clear();
                     supplierNumberComboBox.getItems().addAll(supplierNumbers);
 
                     supplierNumberComboBox.setCellFactory(param -> new ListCell<>() {
@@ -174,7 +182,12 @@ public class AssignmentDialog extends Dialog<Assignment> {
                             if (empty || item == null) {
                                 setText(null);
                             } else {
-                                setText("Nummer " + item.getId());
+                                String supplierName = activeSuppliers.get(item.getId());
+                                if (supplierName != null) {
+                                    setText("Nr. " + item.getId() + " (" + supplierName + ")");
+                                } else {
+                                    setText("Nr. " + item.getId() + " (Keine aktive Zuweisung)");
+                                }
                             }
                         }
                     });
@@ -186,7 +199,12 @@ public class AssignmentDialog extends Dialog<Assignment> {
                             if (empty || item == null) {
                                 setText(null);
                             } else {
-                                setText("Nummer " + item.getId());
+                                String supplierName = activeSuppliers.get(item.getId());
+                                if (supplierName != null) {
+                                    setText("Nr. " + item.getId() + " (" + supplierName + ")");
+                                } else {
+                                    setText("Nr. " + item.getId() + " (Keine aktive Zuweisung)");
+                                }
                             }
                         }
                     });

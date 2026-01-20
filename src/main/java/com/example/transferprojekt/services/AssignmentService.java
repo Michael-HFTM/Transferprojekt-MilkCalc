@@ -30,6 +30,43 @@ public class AssignmentService {
     }
 
     /**
+     * Finds the active assignment for a given supplier number and date
+     *
+     * @param supplierNumberId The supplier number to check
+     * @param date The date for which the assignment should be active
+     * @return The active assignment or null if none found
+     */
+    public Assignment getActiveAssignment(int supplierNumberId, LocalDate date) {
+        List<AssignmentEntity> overlapping = assignmentRepository.findOverlappingAssignments(
+                supplierNumberId, date, date, null);
+
+        if (overlapping.isEmpty()) {
+            return null;
+        }
+
+        // Return the first one found (there should only be one due to overlap checks during save)
+        return mapToDataclass(overlapping.get(0));
+    }
+
+    /**
+     * Gets a map of supplier number IDs to supplier names for active assignments on a specific date.
+     *
+     * @param date The date to check for active assignments
+     * @return A map where key is supplier number ID and value is the supplier name
+     */
+    public java.util.Map<Integer, String> getActiveSupplierNames(LocalDate date) {
+        List<Assignment> allAssignments = getDatabaseEntries();
+        return allAssignments.stream()
+                .filter(a -> !a.getValidFrom().isAfter(date) &&
+                        (a.getValidTo() == null || !a.getValidTo().isBefore(date)))
+                .collect(java.util.stream.Collectors.toMap(
+                        a -> a.getSupplierNumber().getId(),
+                        Assignment::getSupplierName,
+                        (existing, replacement) -> existing // Keep the first one in case of overlaps (shouldn't happen)
+                ));
+    }
+
+    /**
      * Checks if there is an overlapping assignment for the given supplier number
      * in the specified time range (excluding the assignment with excludeId if editing)
      *

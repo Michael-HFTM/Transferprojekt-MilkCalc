@@ -1,18 +1,22 @@
 package com.example.transferprojekt.javafx.dialogs;
 
+import com.example.transferprojekt.dataclasses.Assignment;
 import com.example.transferprojekt.dataclasses.MilkDelivery;
 import com.example.transferprojekt.dataclasses.SupplierNumber;
 import com.example.transferprojekt.enumerations.TimeWindow;
 import com.example.transferprojekt.javafx.utils.AsyncDatabaseTask;
 import com.example.transferprojekt.javafx.utils.DialogUtils;
+import com.example.transferprojekt.services.AssignmentService;
 import com.example.transferprojekt.services.SupplierNrService;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
@@ -23,17 +27,19 @@ public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
     private TextField amountField;
 
     private final SupplierNrService supplierNrService;
+    private final AssignmentService assignmentService;
 
     private final MilkDelivery existingDelivery;
     private final boolean isEditMode;
 
-    private MilkDeliveryDialog(SupplierNrService supplierNrService) {
-        this(null, supplierNrService);
+    private MilkDeliveryDialog(SupplierNrService supplierNrService, AssignmentService assignmentService) {
+        this(null, supplierNrService, assignmentService);
     }
 
-    private MilkDeliveryDialog(MilkDelivery existingDelivery, SupplierNrService supplierNrService) {
+    private MilkDeliveryDialog(MilkDelivery existingDelivery, SupplierNrService supplierNrService, AssignmentService assignmentService) {
         this.existingDelivery = existingDelivery;
         this.supplierNrService = supplierNrService;
+        this.assignmentService = assignmentService;
         this.isEditMode = existingDelivery != null;
 
         setupDialog();
@@ -67,10 +73,12 @@ public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
     }
 
     private void createForm() {
+        VBox mainContainer = new VBox(10);
+        mainContainer.setPadding(new Insets(20));
+
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
 
         // Supplier Number ComboBox
         supplierNumberComboBox = new ComboBox<>();
@@ -131,15 +139,25 @@ public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
         grid.add(new Label("Menge (kg):"), 0, 3);
         grid.add(amountField, 1, 3);
 
-        getDialogPane().setContent(grid);
+        mainContainer.getChildren().add(grid);
+
+        getDialogPane().setContent(mainContainer);
         supplierNumberComboBox.requestFocus();
     }
 
     private void loadSupplierNumbersAsync() {
         AsyncDatabaseTask.run(
-                supplierNrService::getDatabaseEntries,
+                () -> {
+                    java.util.List<SupplierNumber> numbers = supplierNrService.getDatabaseEntries();
+                    java.util.Map<Integer, String> activeSuppliers = assignmentService.getActiveSupplierNames(datePicker.getValue());
+                    return new Object[]{numbers, activeSuppliers};
+                },
                 getDialogPane(),
-                supplierNumbers -> {
+                result -> {
+                    java.util.List<SupplierNumber> supplierNumbers = (java.util.List<SupplierNumber>) result[0];
+                    java.util.Map<Integer, String> activeSuppliers = (java.util.Map<Integer, String>) result[1];
+
+                    supplierNumberComboBox.getItems().clear();
                     supplierNumberComboBox.getItems().addAll(supplierNumbers);
 
                     supplierNumberComboBox.setCellFactory(param -> new ListCell<>() {
@@ -149,7 +167,12 @@ public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
                             if (empty || item == null) {
                                 setText(null);
                             } else {
-                                setText("Nummer " + item.getId());
+                                String supplierName = activeSuppliers.get(item.getId());
+                                if (supplierName != null) {
+                                    setText("Nr. " + item.getId() + " (" + supplierName + ")");
+                                } else {
+                                    setText("Nr. " + item.getId() + " (Keine aktive Zuweisung)");
+                                }
                             }
                         }
                     });
@@ -161,12 +184,22 @@ public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
                             if (empty || item == null) {
                                 setText(null);
                             } else {
-                                setText("Nummer " + item.getId());
+                                String supplierName = activeSuppliers.get(item.getId());
+                                if (supplierName != null) {
+                                    setText("Nr. " + item.getId() + " (" + supplierName + ")");
+                                } else {
+                                    setText("Nr. " + item.getId() + " (Keine aktive Zuweisung)");
+                                }
                             }
                         }
                     });
 
                     supplierNumberComboBox.setDisable(false);
+
+                    // If in edit mode, make sure the selection is correctly displayed
+                    if (isEditMode && existingDelivery != null) {
+                        populateFields();
+                    }
                 },
                 error -> DialogUtils.showError("Fehler beim Laden", "Lieferantennummern konnten nicht geladen werden.\n" + error.getMessage())
         );
@@ -177,12 +210,13 @@ public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
                 getDialogPane().getButtonTypes().getFirst()
         );
 
-        supplierNumberComboBox.valueProperty().addListener((obs, oldVal, newVal) ->
-                saveButton.setDisable(!isFormValid())
-        );
-        datePicker.valueProperty().addListener((obs, oldVal, newVal) ->
-                saveButton.setDisable(!isFormValid())
-        );
+        supplierNumberComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
+            saveButton.setDisable(!isFormValid());
+        });
+        datePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
+            saveButton.setDisable(!isFormValid());
+            loadSupplierNumbersAsync();
+        });
         timeWindowComboBox.valueProperty().addListener((obs, oldVal, newVal) ->
                 saveButton.setDisable(!isFormValid())
         );
@@ -324,14 +358,16 @@ public class MilkDeliveryDialog extends Dialog<MilkDelivery> {
         });
     }
 
-    public static Optional<MilkDelivery> showAddDialog(SupplierNrService supplierNrService) {
-        MilkDeliveryDialog dialog = new MilkDeliveryDialog(supplierNrService);
+    public static Optional<MilkDelivery> showAddDialog(SupplierNrService supplierNrService,
+                                                       AssignmentService assignmentService) {
+        MilkDeliveryDialog dialog = new MilkDeliveryDialog(supplierNrService, assignmentService);
         return dialog.showAndWait();
     }
 
     public static Optional<MilkDelivery> showEditDialog(MilkDelivery delivery,
-                                                        SupplierNrService supplierNrService) {
-        MilkDeliveryDialog dialog = new MilkDeliveryDialog(delivery, supplierNrService);
+                                                        SupplierNrService supplierNrService,
+                                                        AssignmentService assignmentService) {
+        MilkDeliveryDialog dialog = new MilkDeliveryDialog(delivery, supplierNrService, assignmentService);
         return dialog.showAndWait();
     }
 }
