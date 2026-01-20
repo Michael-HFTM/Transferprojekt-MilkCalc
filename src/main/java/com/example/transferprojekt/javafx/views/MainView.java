@@ -79,19 +79,27 @@ public class MainView extends BorderPane {
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
         Tab supplierTab = new Tab("Lieferanten");
-        supplierTab.setContent(new SupplierView(supplierService));
+        SupplierView supplierView = new SupplierView(supplierService);
+        supplierTab.setContent(supplierView);
 
         Tab assignmentTab = new Tab("Zuweisungen");
-        assignmentTab.setContent(new AssignmentView(assignmentService, supplierService, supplierNrService));
+        AssignmentView assignmentView = new AssignmentView(assignmentService, supplierService, supplierNrService);
+        assignmentTab.setContent(assignmentView);
 
         Tab deliveryTab = new Tab("Milchlieferungen");
-        deliveryTab.setContent(new MilkDeliveryView(milkDeliveryService, supplierNrService));
+        MilkDeliveryView deliveryView = new MilkDeliveryView(milkDeliveryService, supplierNrService);
+        deliveryTab.setContent(deliveryView);
 
         Tab dashboardTab = new Tab("Dashboard");
         dashboardView = new DashboardView(milkDeliveryService, supplierService, assignmentService);
         dashboardTab.setContent(dashboardView);
 
         tabPane.getTabs().addAll(dashboardTab, supplierTab, assignmentTab, deliveryTab);
+
+        // Load data after views are constructed
+        supplierView.loadData();
+        assignmentView.loadData();
+        deliveryView.loadData();
 
         return tabPane;
     }
@@ -109,17 +117,25 @@ public class MainView extends BorderPane {
     private void refreshAllViews() {
         try {
             Tab supplierTab = tabPane.getTabs().get(1);
-            supplierTab.setContent(new SupplierView(supplierService));
+            SupplierView supplierView = new SupplierView(supplierService);
+            supplierTab.setContent(supplierView);
 
             Tab assignmentTab = tabPane.getTabs().get(2);
-            assignmentTab.setContent(new AssignmentView(assignmentService, supplierService, supplierNrService));
+            AssignmentView assignmentView = new AssignmentView(assignmentService, supplierService, supplierNrService);
+            assignmentTab.setContent(assignmentView);
 
             Tab deliveryTab = tabPane.getTabs().get(3);
-            deliveryTab.setContent(new MilkDeliveryView(milkDeliveryService, supplierNrService));
+            MilkDeliveryView deliveryView = new MilkDeliveryView(milkDeliveryService, supplierNrService);
+            deliveryTab.setContent(deliveryView);
 
             Tab dashboardTab = tabPane.getTabs().get(0);
             dashboardView = new DashboardView(milkDeliveryService, supplierService, assignmentService);
             dashboardTab.setContent(dashboardView);
+
+            // Load data after views are constructed
+            supplierView.loadData();
+            assignmentView.loadData();
+            deliveryView.loadData();
 
             tabPane.getSelectionModel().select(dashboardTab);
 
