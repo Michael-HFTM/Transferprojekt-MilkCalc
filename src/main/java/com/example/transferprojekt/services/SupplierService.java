@@ -6,11 +6,13 @@ import com.example.transferprojekt.jpa.entities.SupplierEntity;
 import com.example.transferprojekt.jpa.repositories.SupplierRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
+@Transactional
 public class SupplierService {
 
     private final SupplierRepository supplierRepository;
