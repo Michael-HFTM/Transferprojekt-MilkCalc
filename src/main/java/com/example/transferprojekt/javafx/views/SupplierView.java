@@ -164,11 +164,14 @@ public class SupplierView extends BorderPane {
             deleteButton.setDisable(!hasSelection);
         });
 
-        // Double-click to edit
-        table.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2 && table.getSelectionModel().getSelectedItem() != null) {
-                editSupplier();
-            }
+        table.setRowFactory(tv -> {
+            TableRow<Company> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    editSupplier();
+                }
+            });
+            return row;
         });
 
         return table;
